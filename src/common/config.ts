@@ -1,12 +1,14 @@
-export const config = {
+export const config = () => ({
   serverPort: process.env.PORT,
 
   // load database configurations
-  dbType: process.env.DATABASE_TYPE,
-  dbHost: process.env.DATABASE_HOST,
-  dbPort: process.env.DATABASE_PORT,
-  dbName: process.env.DATABASE_NAME,
-  dbUsername: process.env.DATABASE_USERNAME,
-  dbPassword: process.env.DATABASE_PASSWORD,
-  dbUrl: process.env.DATABASE_URL,
-};
+  database: {
+    type: process.env.DATABASE_TYPE,
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT,
+    name: process.env.DATABASE_NAME,
+    username: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+    url: process.env.DATABASE_URL,
+  },
+});

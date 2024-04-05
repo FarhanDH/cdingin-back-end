@@ -5,10 +5,19 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'customers' })
 export class Customer {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
+
+  @Column({ unique: true, name: 'no_hp' })
+  noHp: string;
+
+  @Column({ unique: true, name: 'email' })
+  email: string;
+
+  @Column({ name: 'password' })
+  password: string;
 
   @Column({ name: 'first_name' })
   firstName: string;

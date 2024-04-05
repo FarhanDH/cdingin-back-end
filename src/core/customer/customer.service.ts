@@ -11,6 +11,8 @@ export class CustomerService {
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
   ) {}
+
+  // MARK: Create User
   async register(createCustomerDto: CreateCustomerDto) {
     const user = new Customer();
     user.firstName = createCustomerDto.firstName;

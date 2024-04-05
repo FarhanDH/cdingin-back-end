@@ -1,22 +1,21 @@
-import { DataSource } from 'typeorm';
-import 'reflect-metadata';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { config } from '../config';
+import { configDotenv } from 'dotenv';
 
-export const AppDataSource = new DataSource({
+configDotenv();
+export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  host: config.dbHost,
-  port: Number(config.dbPort),
-  username: config.dbUsername,
-  password: config.dbPassword,
-  database: config.dbName,
-  // url: config.dbUrl,
-  // entities: [`${__dirname}/../**/*.entity{.ts,.js}`],
-  // migrations: [`${__dirname}/../migrations/*{.ts,.js}`],
-  //   autoLoadEntities: true,
-  // options,
-  synchronize: true, // remove when production
-  migrationsRun: true,
+  host: config().database.host,
+  port: parseInt(config().database.port),
+  username: config().database.username,
+  password: config().database.password,
+  database: config().database.name,
+  url: config().database.url,
+  entities: ['dist/**/*.entity.js'],
+  migrations: [`dist/common/database/migrations/*.js`],
   logging: true, // remove when production
-  ssl: true,
-  extra: { ssl: { rejectUnauthorized: false } },
-});
+  synchronize: false, // remove when production use migrations instead of synchronize
+};
+
+const dataSource = new DataSource(dataSourceOptions);
+export default dataSource;

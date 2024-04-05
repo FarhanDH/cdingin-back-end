@@ -5,9 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@neondatabase/serverless':
-    specifier: ^0.9.0
-    version: 0.9.0
   '@nestjs/common':
     specifier: ^10.0.0
     version: 10.3.3(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.1.14)(rxjs@7.8.1)
@@ -32,6 +29,9 @@ dependencies:
   class-validator:
     specifier: ^0.14.1
     version: 0.14.1
+  dotenv:
+    specifier: ^16.4.5
+    version: 16.4.5
   pg:
     specifier: ^8.11.3
     version: 8.11.3
@@ -863,12 +863,6 @@ packages:
     resolution: {integrity: sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==}
     engines: {node: '>=8'}
 
-  /@neondatabase/serverless@0.9.0:
-    resolution: {integrity: sha512-mmJnUAzlzvxNSZuuhI6kgJjH+JgFdBMYUWxihtq/nj0Tjt+Y5UU3W+SvRFoucnd5NObYkuLYQzk+zV5DGFKGJg==}
-    dependencies:
-      '@types/pg': 8.6.6
-    dev: false
-
   /@nestjs/cli@10.3.2:
     resolution: {integrity: sha512-aWmD1GLluWrbuC4a1Iz/XBk5p74Uj6nIVZj6Ov03JbTfgtWqGFLtXuMetvzMiHxfrHehx/myt2iKAPRhKdZvTg==}
     engines: {node: '>= 16.14'}
@@ -1287,14 +1281,6 @@ packages:
     resolution: {integrity: sha512-M/GPWVS2wLkSkNHVeLkrF2fD5Lx5UC4PxA0uZcKc6QqbIQUJyW1jVjueJYi1z8n0I5PxYrtpnPnWglE+y9A0KA==}
     dependencies:
       undici-types: 5.26.5
-
-  /@types/pg@8.6.6:
-    resolution: {integrity: sha512-O2xNmXebtwVekJDD+02udOncjVcMZQuTEQEMpKJ0ZRf5E7/9JJX3izhKUcUifBkyKpljyUM6BTgy2trmviKlpw==}
-    dependencies:
-      '@types/node': 20.11.28
-      pg-protocol: 1.6.0
-      pg-types: 2.2.0
-    dev: false
 
   /@types/qs@6.9.12:
     resolution: {integrity: sha512-bZcOkJ6uWrL0Qb2NAWKa7TBU+mJHPzhx9jjLL1KHF+XpzEcR7EXHvjbHlGtR/IsP1vyPrehuS6XqkmaePy//mg==}
@@ -2403,6 +2389,11 @@ packages:
 
   /dotenv@16.4.1:
     resolution: {integrity: sha512-CjA3y+Dr3FyFDOAMnxZEGtnW9KBR2M0JvvUtXNW+dYJL5ROWxP9DUHCwgFqpMk0OXCc0ljhaNTr2w/kutYIcHQ==}
+    engines: {node: '>=12'}
+    dev: false
+
+  /dotenv@16.4.5:
+    resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
     engines: {node: '>=12'}
     dev: false
 
@@ -5297,7 +5288,7 @@ packages:
       cli-highlight: 2.1.11
       dayjs: 1.11.10
       debug: 4.3.4
-      dotenv: 16.4.1
+      dotenv: 16.4.5
       glob: 10.3.10
       mkdirp: 2.1.6
       pg: 8.11.3

@@ -9,7 +9,9 @@ async function bootstrap() {
   });
   app.setGlobalPrefix('api');
   await app
-    .listen(config.serverPort)
-    .then(() => console.log(`server started 🚀 on port ${config.serverPort}`));
+    .listen(config().serverPort)
+    .then(() =>
+      console.log(`server started 🚀 on port ${config().serverPort}`),
+    );
 }
 bootstrap();
