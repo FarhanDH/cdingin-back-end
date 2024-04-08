@@ -1,3 +1,4 @@
+import { AfterLoad } from 'typeorm';
 import {
   Column,
   CreateDateColumn,
@@ -10,24 +11,24 @@ export class Customer {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
 
-  @Column({ unique: true, name: 'no_hp' })
-  noHp: string;
-
-  @Column({ unique: true, name: 'email' })
-  email: string;
-
-  @Column({ name: 'password' })
-  password: string;
-
-  @Column({ name: 'first_name' })
+  @Column({ name: 'first_name', type: 'text' })
   firstName: string;
 
-  @Column({ name: 'last_name' })
+  @Column({ name: 'last_name', type: 'text' })
   lastName: string;
 
-  @Column({ name: 'full_name' })
+  @Column({ name: 'full_name', type: 'text' })
   fullName: string;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @Column({ unique: true, name: 'phone_number', type: 'text' })
+  phoneNumber: string;
+
+  @Column({ unique: true, name: 'email', type: 'text' })
+  email: string;
+
+  @Column({ name: 'password', type: 'text' })
+  password: string;
+
+  @CreateDateColumn({ name: 'created_at', type: 'text' })
   createdAt: Date;
 }

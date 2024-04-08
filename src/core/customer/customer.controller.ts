@@ -1,45 +1,25 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiResponse } from '~/common/api-response';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
-import { UpdateCustomerDto } from './dto/update-customer.dto';
 
 @Controller('customers')
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
+  /**
+   * Register a new customer with the provided customer data.
+   *
+   * @method POST
+   * @param {CreateCustomerDto} createCustomerDto - the data for creating a new customer
+   * @return {Promise<ApiResponse<string>>} the API response indicating successful customer creation
+   */
   @Post('register')
   async register(@Body() createCustomerDto: CreateCustomerDto) {
-    return await this.customerService.register(createCustomerDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.customerService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.customerService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateCustomerDto: UpdateCustomerDto,
-  ) {
-    return this.customerService.update(+id, updateCustomerDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.customerService.remove(+id);
+    await this.customerService.register(createCustomerDto);
+    return {
+      statusCode: 201,
+      data: 'Customer created succesfully',
+    } satisfies ApiResponse<string>;
   }
 }
