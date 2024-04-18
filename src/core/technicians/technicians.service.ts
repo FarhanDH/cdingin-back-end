@@ -1,26 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { hashSync } from 'bcrypt';
+import { Repository } from 'typeorm';
 import { CreateTechnicianDto } from './dto/create-technician.dto';
-import { UpdateTechnicianDto } from './dto/update-technician.dto';
+import { Technician } from './entities/technician.entity';
 
 @Injectable()
 export class TechniciansService {
-  create(createTechnicianDto: CreateTechnicianDto) {
-    return 'This action adds a new technician';
-  }
+  constructor(
+    @InjectRepository(Technician)
+    private readonly techniciansRepository: Repository<Technician>,
+  ) {}
 
-  findAll() {
-    return `This action returns all technicians`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} technician`;
-  }
-
-  update(id: number, updateTechnicianDto: UpdateTechnicianDto) {
-    return `This action updates a #${id} technician`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} technician`;
+  async register(createTechnicianDto: CreateTechnicianDto) {
+    try {
+      const user = new Technician();
+      user.firstName = createTechnicianDto.firstName;
+      user.lastName = createTechnicianDto.lastName;
+      user.fullName = `${createTechnicianDto.firstName} ${createTechnicianDto.lastName}`;
+      user.email = createTechnicianDto.email;
+      user.phoneNumber = createTechnicianDto.phoneNumber;
+      user.password = await hashSync(createTechnicianDto.password, 10);
+      return await this.techniciansRepository.save(user);
+    } catch (e) {
+      throw new ConflictException('email or phone number is already exists');
+    }
   }
 }
