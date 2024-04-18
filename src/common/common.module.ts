@@ -1,8 +1,8 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { config } from './config';
 import { DatabaseModule } from './database/database.module';
 import { AppLoggerMiddleware } from './logger.middleware';
-import { config } from './config';
 
 @Module({
   imports: [

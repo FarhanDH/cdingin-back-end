@@ -5,8 +5,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity({ name: 'customers' })
-export class Customer {
+@Entity({ name: 'technicians' })
+export class Technician {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
 
