@@ -1,6 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { config } from '../config';
 import { configDotenv } from 'dotenv';
+import { DatabaseLogger } from './database.logger';
 
 configDotenv();
 export const dataSourceOptions: DataSourceOptions = {
@@ -13,7 +14,8 @@ export const dataSourceOptions: DataSourceOptions = {
   url: config().database.url,
   entities: ['dist/**/*.entity.js'],
   migrations: [`dist/common/database/migrations/*.js`],
-  logging: true, // remove when production
+  logger: new DatabaseLogger(),
+  // logging: true, // remove when production
   synchronize: false, // remove when production use migrations instead of synchronize
   ssl: true, // remove when work on local
   extra: { ssl: { rejectUnauthorized: true, require: true } }, // remove when work on local

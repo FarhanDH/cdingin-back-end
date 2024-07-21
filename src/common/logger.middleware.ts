@@ -21,7 +21,13 @@ export class AppLoggerMiddleware implements NestMiddleware {
     const { ip, method, originalUrl: url } = request;
     response.on('close', () => {
       const { statusCode } = response;
-      this.logger.log(`${method} ~ ${url} ~ ${statusCode} | ${ip}`);
+      if (statusCode >= 500) {
+        this.logger.error(`${method} ~ ${url} ~ ${statusCode} | ${ip}`);
+      } else if (statusCode >= 400) {
+        this.logger.warn(`${method} ~ ${url} ~ ${statusCode} | ${ip}`);
+      } else {
+        this.logger.log(`${method} ~ ${url} ~ ${statusCode} | ${ip}`);
+      }
     });
     next();
   }
