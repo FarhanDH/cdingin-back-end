@@ -10,24 +10,21 @@ export class Technician {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
 
-  @Column({ name: 'first_name', type: 'text' })
-  firstName: string;
+  @Column({ type: 'varchar', length: 100})
+  name: string;
 
-  @Column({ name: 'last_name', type: 'text' })
-  lastName: string;
+  @Column({ unique: true, type: 'varchar', length: 100 })
+  phone: string;
 
-  @Column({ name: 'full_name', type: 'text' })
-  fullName: string;
-
-  @Column({ unique: true, name: 'phone_number', type: 'text' })
-  phoneNumber: string;
-
-  @Column({ unique: true, name: 'email', type: 'text' })
+  @Column({ unique: true, type: 'varchar', length: 100 })
   email: string;
 
-  @Column({ name: 'password', type: 'text' })
+  @Column({ type: 'varchar', length: 100 })
   password: string;
 
-  @CreateDateColumn({ name: 'created_at', type: 'text' })
-  createdAt: Date;
+  @CreateDateColumn({ type: 'timestamp with time zone' })
+  date_created: Date;
+
+  @CreateDateColumn({ type: 'timestamp with time zone' })
+  date_modified: Date;
 }

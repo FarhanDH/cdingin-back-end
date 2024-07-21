@@ -10,11 +10,7 @@ import {
 export class CreateTechnicianDto {
   @IsNotEmpty()
   @IsString()
-  firstName: string;
-
-  @IsOptional()
-  @IsString()
-  lastName: string;
+  name: string;
 
   @IsNotEmpty()
   @IsString()
@@ -24,7 +20,7 @@ export class CreateTechnicianDto {
   @IsNotEmpty()
   @IsNumberString()
   @MinLength(10)
-  phoneNumber: string;
+  phone: string;
 
   @IsString()
   @IsNotEmpty()

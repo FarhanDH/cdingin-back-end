@@ -19,14 +19,12 @@ export class CustomerService {
    * @return {Promise<Customer>} the newly created customer if user registration is successful
    * @throws {ConflictException} if the email or phone number is already registered
    */
-  async register(createCustomerDto: CreateCustomerDto) {
+  async create(createCustomerDto: CreateCustomerDto): Promise<Customer> {
     try {
       const user = new Customer();
-      user.firstName = createCustomerDto.firstName;
-      user.lastName = createCustomerDto.lastName;
-      user.fullName = `${createCustomerDto.firstName} ${createCustomerDto.lastName}`;
+      user.name = createCustomerDto.name;
       user.email = createCustomerDto.email;
-      user.phoneNumber = createCustomerDto.phoneNumber;
+      user.phone = createCustomerDto.phone;
       user.password = await hashSync(createCustomerDto.password, 10);
       return await this.customerRepository.save(user);
     } catch (e) {

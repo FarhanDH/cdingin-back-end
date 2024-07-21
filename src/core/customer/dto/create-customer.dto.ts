@@ -10,11 +10,7 @@ import {
 export class CreateCustomerDto {
   @IsNotEmpty()
   @IsString()
-  firstName: string;
-
-  @IsOptional()
-  @IsString()
-  lastName: string;
+  name: string;
 
   @IsNotEmpty()
   @IsString()
@@ -24,7 +20,7 @@ export class CreateCustomerDto {
   @IsNotEmpty()
   @IsNumberString()
   @MinLength(10)
-  phoneNumber: string;
+  phone: string;
 
   @IsString()
   @IsNotEmpty()

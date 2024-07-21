@@ -1,7 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { CreateTechnicianDto } from './dto/create-technician.dto';
 import { TechniciansService } from './technicians.service';
-import { ApiResponse } from '~/common/api-response';
 
 @Controller('technicians')
 export class TechniciansController {
@@ -13,6 +12,6 @@ export class TechniciansController {
     return {
       statusCode: 201,
       data: 'Technician created succesfully',
-    } satisfies ApiResponse<string>;
+    };
   }
 }

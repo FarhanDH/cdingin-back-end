@@ -16,7 +16,7 @@ export const dataSourceOptions: DataSourceOptions = {
   logging: true, // remove when production
   synchronize: false, // remove when production use migrations instead of synchronize
   ssl: true, // remove when work on local
-  extra: { ssl: { rejectUnauthorized: false, require: true } }, // remove when work on local
+  extra: { ssl: { rejectUnauthorized: true, require: true } }, // remove when work on local
 };
 
 const dataSource = new DataSource(dataSourceOptions);

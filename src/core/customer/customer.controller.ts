@@ -1,5 +1,4 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiResponse } from '~/common/api-response';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 
@@ -16,10 +15,10 @@ export class CustomerController {
    */
   @Post('register')
   async register(@Body() createCustomerDto: CreateCustomerDto) {
-    await this.customerService.register(createCustomerDto);
+    await this.customerService.create(createCustomerDto);
     return {
       statusCode: 201,
       data: 'Customer created succesfully',
-    } satisfies ApiResponse<string>;
+    };
   }
 }

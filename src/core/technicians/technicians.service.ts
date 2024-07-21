@@ -15,11 +15,9 @@ export class TechniciansService {
   async register(createTechnicianDto: CreateTechnicianDto) {
     try {
       const user = new Technician();
-      user.firstName = createTechnicianDto.firstName;
-      user.lastName = createTechnicianDto.lastName;
-      user.fullName = `${createTechnicianDto.firstName} ${createTechnicianDto.lastName}`;
+      user.name = createTechnicianDto.name;
       user.email = createTechnicianDto.email;
-      user.phoneNumber = createTechnicianDto.phoneNumber;
+      user.phone = createTechnicianDto.phone;
       user.password = await hashSync(createTechnicianDto.password, 10);
       return await this.techniciansRepository.save(user);
     } catch (e) {
