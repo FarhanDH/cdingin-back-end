@@ -1,17 +1,23 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { CreateTechnicianDto } from './dto/create-technician.dto';
 import { TechniciansService } from './technicians.service';
+import {
+  CreateTechnicianRequest,
+  TechnicianResponse,
+} from '../models/technician.model';
+import { Response } from '../models/api-response.model';
 
 @Controller('technicians')
 export class TechniciansController {
   constructor(private readonly techniciansService: TechniciansService) {}
 
   @Post('register')
-  async create(@Body() createTechnicianDto: CreateTechnicianDto) {
-    await this.techniciansService.register(createTechnicianDto);
+  async create(
+    @Body() request: CreateTechnicianRequest,
+  ): Promise<Response<TechnicianResponse>> {
+    const result = await this.techniciansService.register(request);
     return {
-      statusCode: 201,
-      data: 'Technician created succesfully',
+      message: 'Technician registered successfully',
+      data: result,
     };
   }
 }

@@ -7,7 +7,7 @@ configDotenv();
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   host: config().database.host,
-  port: parseInt(config().database.port),
+  port: config().database.port,
   username: config().database.username,
   password: config().database.password,
   database: config().database.name,

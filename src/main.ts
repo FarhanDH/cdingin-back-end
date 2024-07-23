@@ -19,8 +19,6 @@ async function bootstrap() {
   const logger: Logger = new Logger('Info');
   await app
     .listen(config().serverPort)
-    .then(() =>
-      logger.log(`server started 🚀 on port ${config().serverPort}`),
-    );
+    .then(() => logger.log(`server started 🚀 on port ${config().serverPort}`));
 }
 bootstrap();

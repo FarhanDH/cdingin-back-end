@@ -6,9 +6,9 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import { Customer } from '../customer/entities/customer.entity';
+import { Technician } from '../technicians/entities/technician.entity';
 
-export class CreateCustomerRequest {
+export class CreateTechnicianRequest {
   @IsNotEmpty()
   @IsString()
   name: string;
@@ -29,9 +29,11 @@ export class CreateCustomerRequest {
   password: string;
 }
 
-export class UpdateCustomerDto extends PartialType(CreateCustomerRequest) {}
+export class UpdateTechnicianRequest extends PartialType(
+  CreateTechnicianRequest,
+) {}
 
-export class CustomerResponse {
+export class TechnicianResponse {
   id: string;
   name: string;
   email: string;
@@ -40,13 +42,15 @@ export class CustomerResponse {
   date_modified: Date;
 }
 
-export const toCustomerResponse = (customer: Customer): CustomerResponse => {
+export const toTechnicianResponse = (
+  technician: Technician,
+): TechnicianResponse => {
   return {
-    id: customer.id,
-    name: customer.name,
-    email: customer.email,
-    phone: customer.phone,
-    date_created: customer.date_created,
-    date_modified: customer.date_modified,
+    id: technician.id,
+    name: technician.name,
+    email: technician.email,
+    phone: technician.phone,
+    date_created: technician.date_created,
+    date_modified: technician.date_modified,
   };
 };
