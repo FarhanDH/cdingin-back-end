@@ -1,15 +1,15 @@
 import {
   IsEmail,
   IsNotEmpty,
-  IsNumberString,
   IsOptional,
+  IsPhoneNumber,
   MaxLength,
   MinLength,
 } from 'class-validator';
 
 export class CreateContactRequest {
   @IsNotEmpty()
-  @IsNumberString()
+  @IsPhoneNumber('ID')
   @MinLength(10)
   @MaxLength(15)
   phone: string;

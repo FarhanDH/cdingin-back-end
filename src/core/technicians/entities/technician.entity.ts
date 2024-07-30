@@ -19,7 +19,7 @@ export class Technician {
   @OneToOne(() => Contact, {
     cascade: true,
   })
-  @JoinColumn()
+  @JoinColumn({ name: 'contact_id' })
   contact: Contact;
 
   @Column({ type: 'varchar', length: 100, nullable: true })

@@ -22,6 +22,8 @@ export class UpdateCustomerDto extends PartialType(CreateCustomerRequest) {}
 export class CustomerResponse {
   id: string;
   name: string;
+  phone: string;
+  email: string;
   date_created: Date;
   date_modified: Date;
 }
@@ -30,6 +32,8 @@ export const toCustomerResponse = (customer: Customer): CustomerResponse => {
   return {
     id: customer.id,
     name: customer.name,
+    phone: customer.contact.phone,
+    email: customer.contact.email,
     date_created: customer.date_created,
     date_modified: customer.date_modified,
   };
