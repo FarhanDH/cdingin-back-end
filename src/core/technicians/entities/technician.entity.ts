@@ -32,7 +32,7 @@ export class Technician {
   license_plate: string;
 
   @Column({ type: 'boolean', default: true })
-  available: boolean;
+  is_available: boolean;
 
   @Column({ type: 'varchar', length: 100 })
   password: string;

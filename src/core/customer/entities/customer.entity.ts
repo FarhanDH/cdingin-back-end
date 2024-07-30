@@ -16,7 +16,9 @@ export class Customer {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @OneToOne(() => Contact)
+  @OneToOne(() => Contact, {
+    cascade: true,
+  })
   @JoinColumn()
   contact: Contact;
 
