@@ -1,8 +1,9 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { Customer } from '../customer/entities/customer.entity';
+import { CreateContactRequest } from './contact.model';
 
-export class CreateCustomerRequest {
+export class CreateCustomerRequest extends CreateContactRequest {
   @IsNotEmpty()
   @IsString()
   @MinLength(3)

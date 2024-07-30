@@ -2,8 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Contact } from '~/core/contact/entities/contact.entity';
 
 @Entity({ name: 'technicians' })
 export class Technician {
@@ -12,6 +15,12 @@ export class Technician {
 
   @Column({ type: 'varchar', length: 100 })
   name: string;
+
+  @OneToOne(() => Contact, {
+    cascade: true,
+  })
+  @JoinColumn()
+  contact: Contact;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   image_key: string;
@@ -22,7 +31,7 @@ export class Technician {
   @Column({ type: 'varchar', length: 10, nullable: true })
   license_plate: string;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: true })
   available: boolean;
 
   @Column({ type: 'varchar', length: 100 })
@@ -31,6 +40,9 @@ export class Technician {
   @CreateDateColumn({ type: 'timestamp with time zone' })
   date_created: Date;
 
-  @CreateDateColumn({ type: 'timestamp with time zone' })
+  @CreateDateColumn({
+    type: 'timestamp with time zone',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
   date_modified: Date;
 }

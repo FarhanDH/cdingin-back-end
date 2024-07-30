@@ -2,26 +2,19 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Contact } from '~/core/contact/entities/contact.entity';
 
-@Entity({ name: 'customers' })
-export class Customer {
+@Entity({ name: 'contacts' })
+export class Contact {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
 
-  @Column({ type: 'varchar', length: 100 })
-  name: string;
+  @Column({ type: 'varchar', length: 15, unique: true })
+  phone: string;
 
-  @OneToOne(() => Contact)
-  @JoinColumn()
-  contact: Contact;
-
-  @Column({ type: 'varchar', length: 100 })
-  password: string;
+  @Column({ type: 'varchar', length: 100, nullable: true, unique: true })
+  email: string;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   date_created: Date;
