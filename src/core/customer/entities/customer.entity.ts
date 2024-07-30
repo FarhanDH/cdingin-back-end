@@ -10,14 +10,8 @@ export class Customer {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
 
-  @Column({ type: 'varchar', length: 100})
+  @Column({ type: 'varchar', length: 100 })
   name: string;
-
-  @Column({ unique: true, type: 'varchar', length: 100 })
-  phone: string;
-
-  @Column({ unique: true, type: 'varchar', length: 100 })
-  email: string;
 
   @Column({ type: 'varchar', length: 100 })
   password: string;

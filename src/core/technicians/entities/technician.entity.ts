@@ -13,11 +13,17 @@ export class Technician {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ unique: true, type: 'varchar', length: 100 })
-  phone: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  image_key: string;
 
-  @Column({ unique: true, type: 'varchar', length: 100 })
-  email: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  image_url: string;
+
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  license_plate: string;
+
+  @Column({ type: 'boolean', default: false })
+  available: boolean;
 
   @Column({ type: 'varchar', length: 100 })
   password: string;
