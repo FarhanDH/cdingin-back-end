@@ -10,6 +10,11 @@ import {
 import { Customer } from './entities/customer.entity';
 import { Contact } from '../contact/entities/contact.entity';
 
+/**
+ * Customer Service
+ *
+ * Provides methods for creating and managing customers.
+ */
 @Injectable()
 export class CustomerService {
   constructor(
@@ -19,7 +24,20 @@ export class CustomerService {
   ) {}
   private readonly logger: Logger = new Logger(CustomerService.name);
 
-  /** MARK: Register new customer.
+  /**
+   * Register a new customer.
+   *
+   * @param request - The customer creation request.
+   * @returns The created customer response.
+   *
+   * @example
+   * const request: CreateCustomerRequest = {
+   *   name: 'John Doe',
+   *   email: 'john.doe@example.com',
+   *   phone: '1234567890',
+   *   password: 'password123',
+   * };
+   * const customerResponse: CustomerResponse = await customerService.create(request);
    */
   async create(request: CreateCustomerRequest): Promise<CustomerResponse> {
     this.logger.debug(`CustomerService.create(${JSON.stringify(request)})`);
