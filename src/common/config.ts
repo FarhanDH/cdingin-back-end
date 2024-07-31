@@ -11,4 +11,8 @@ export const config = () => ({
     password: process.env.DATABASE_PASSWORD,
     url: process.env.DATABASE_URL,
   },
+
+  secret: {
+    secretTokenKey: process.env.SECRET_TOKEN,
+  },
 });

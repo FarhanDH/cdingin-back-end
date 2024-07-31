@@ -46,12 +46,12 @@ export class CustomerService {
       // Transaction save customer and contact data
       const savedCustomer: Customer = await this.dataSource.transaction(
         async (entityManager) => {
-          const contact = await entityManager.create(Contact, {
+          const contact = entityManager.create(Contact, {
             phone: request.phone,
             email: request.email,
           });
           await entityManager.save(contact);
-          const customer = await entityManager.create(Customer, {
+          const customer = entityManager.create(Customer, {
             name: request.name,
             password: hashSync(request.password, 10),
             contact,
@@ -59,6 +59,7 @@ export class CustomerService {
           return await entityManager.save(customer);
         },
       );
+
       this.logger.log(
         `CustomerService.create(${JSON.stringify(request)}): success`,
       );
@@ -69,5 +70,15 @@ export class CustomerService {
       );
       throw new HttpException({ errors: error.message }, 500);
     }
+  }
+
+  async getCustomerByPhone(phone: string): Promise<Customer | null> {
+    this.logger.debug(`CustomerService.getCustomerByPhone(${phone})`);
+    return await this.customerRepository.findOne({
+      where: { contact: { phone } },
+      relations: {
+        contact: true,
+      },
+    });
   }
 }

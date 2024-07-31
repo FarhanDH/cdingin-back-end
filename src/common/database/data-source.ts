@@ -1,7 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { config } from '../config';
 import { configDotenv } from 'dotenv';
-import { DatabaseLogger } from './database.logger';
+import { DatabaseLogger } from '../logger/database.logger';
 
 configDotenv();
 export const dataSourceOptions: DataSourceOptions = {

@@ -1,5 +1,6 @@
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
+import { v7 as uuidv7 } from 'uuid';
 
 /**
  * This class is a middleware function that logs information about incoming requests.
@@ -18,17 +19,45 @@ export class AppLoggerMiddleware implements NestMiddleware {
    * @return {void} This function does not return a value.
    */
   use(request: Request, response: Response, next: NextFunction): void {
-    const { ip, method, originalUrl: url } = request;
-    response.on('close', () => {
+    const { ip, method, originalUrl: url, params, query, body } = request;
+    const userAgent = request.get('user-agent') || 'unknown';
+    const startTime = Date.now();
+    const requestId = uuidv7();
+
+    request.headers['request-id'] = requestId;
+    response.setHeader('X-Request-Id', requestId);
+
+    const logMessage = {
+      requestId,
+      ip,
+      url,
+      method,
+      params,
+      query,
+      body,
+      userAgent,
+    };
+
+    this.logger.log('Incoming Request: ', logMessage);
+
+    response.on('finish', () => {
       const { statusCode } = response;
+      const responseTime = Date.now() - startTime;
+      const responseLogMessage = {
+        statusCode,
+        ...logMessage,
+        responseTime: responseTime + 'ms',
+      };
+
       if (statusCode >= 500) {
-        this.logger.error(`${method} ~ ${url} ~ ${statusCode} | ${ip}`);
+        this.logger.error('Request Failed:', responseLogMessage);
       } else if (statusCode >= 400) {
-        this.logger.warn(`${method} ~ ${url} ~ ${statusCode} | ${ip}`);
+        this.logger.warn('Client Error: ', responseLogMessage);
       } else {
-        this.logger.log(`${method} ~ ${url} ~ ${statusCode} | ${ip}`);
+        this.logger.log('Request Completed: ', responseLogMessage);
       }
     });
+
     next();
   }
 }
