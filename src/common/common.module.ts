@@ -7,7 +7,7 @@ import { AuthController } from '~/core/auth/auth.controller';
 import { CustomerController } from '~/core/customer/customer.controller';
 import { TechniciansController } from '~/core/technicians/technicians.controller';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { ResponseInterceptor } from './logger/response.interceptor';
+import { ResponseInterceptor } from './response.interceptor';
 
 @Module({
   providers: [
