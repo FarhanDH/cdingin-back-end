@@ -12,7 +12,7 @@ export const config = () => ({
     url: process.env.DATABASE_URL,
   },
 
-  secret: {
-    secretTokenKey: process.env.SECRET_TOKEN,
+  jwtConstants: {
+    secret: process.env.JWT_SECRET,
   },
 });

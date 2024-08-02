@@ -12,7 +12,7 @@ import { AuthService } from './auth.service';
     ContactModule,
     JwtModule.register({
       global: true,
-      secret: config().secret.secretTokenKey,
+      secret: config().jwtConstants.secret,
     }),
   ],
   controllers: [AuthController],
