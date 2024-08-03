@@ -13,7 +13,8 @@ export const config = () => ({
   },
 
   jwtConstants: {
-    secret: process.env.JWT_SECRET,
+    secretAccessToken: process.env.JWT_SECRET_ACCESS_TOKEN,
+    secretRefreshToken: process.env.JWT_SECRET_REFRESH_TOKEN,
   },
 
   // load redis configurations

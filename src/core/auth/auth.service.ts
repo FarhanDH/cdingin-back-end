@@ -10,9 +10,10 @@ import {
 import { compare } from 'bcrypt';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
+import { config } from '~/common/config';
 
 /**
- * Service responsible for handling customer authentication.
+ * Service responsible for handling authentication.
  */
 @Injectable()
 export class AuthService {
@@ -48,11 +49,12 @@ export class AuthService {
     // Generate refresh token with 7-day expiration
     const refreshToken = await this.jwtService.signAsync(payload, {
       expiresIn: '7d',
+      secret: config().jwtConstants.secretRefreshToken,
     });
 
     // Store refresh token in Redis with 7-day TTL
     await this.redis.set(
-      `customer:${customer.id}:refreshToken`,
+      `user:${customer.id}:refreshToken`,
       refreshToken,
       'EX',
       7 * 24 * 60 * 60, // 7 days in seconds
@@ -63,6 +65,7 @@ export class AuthService {
       token: {
         access_token: await this.jwtService.signAsync(payload, {
           expiresIn: '15m',
+          secret: config().jwtConstants.secretAccessToken,
         }),
         refresh_token: refreshToken,
       },
