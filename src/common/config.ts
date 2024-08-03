@@ -15,4 +15,12 @@ export const config = () => ({
   jwtConstants: {
     secret: process.env.JWT_SECRET,
   },
+
+  // load redis configurations
+  redis: {
+    url: process.env.REDIS_URL as string,
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT as unknown as number,
+    password: process.env.REDIS_PASSWORD,
+  },
 });

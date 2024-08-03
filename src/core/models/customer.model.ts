@@ -48,7 +48,7 @@ export class CustomerResponse {
   date_modified: Date;
   token?: {
     access_token: string;
-    expires_in: number;
+    refresh_token: string;
   };
 }
 

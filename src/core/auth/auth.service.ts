@@ -8,11 +8,34 @@ import {
   toCustomerResponse,
 } from '../models/customer.model';
 import { compare } from 'bcrypt';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import Redis from 'ioredis';
 
+/**
+ * Service responsible for handling customer authentication.
+ */
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwtService: JwtService) {}
+  /**
+   * Creates an instance of AuthService.
+   * @param jwtService - JWT service instance.
+   * @param redis - Redis client instance.
+   */
+  constructor(
+    private readonly jwtService: JwtService,
+    @InjectRedis() private readonly redis: Redis,
+  ) {}
+
+  /**
+   * Logger instance for this service.
+   */
   private readonly logger: Logger = new Logger(AuthService.name);
+
+  /**
+   * Generates a JWT for a customer and stores the refresh token in Redis.
+   * @param customer - Customer entity.
+   * @returns Customer response with JWT token.
+   */
   async generateJwtForCustomer(customer: Customer): Promise<CustomerResponse> {
     const payload: JwtPayload = {
       id: customer.id,
@@ -21,17 +44,37 @@ export class AuthService {
     };
 
     const customerData = toCustomerResponse(customer);
+
+    // Generate refresh token with 7-day expiration
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '7d',
+    });
+
+    // Store refresh token in Redis with 7-day TTL
+    await this.redis.set(
+      `customer:${customer.id}:refreshToken`,
+      refreshToken,
+      'EX',
+      7 * 24 * 60 * 60, // 7 days in seconds
+    );
+
     return {
       ...customerData,
       token: {
         access_token: await this.jwtService.signAsync(payload, {
-          expiresIn: '5h',
+          expiresIn: '15m',
         }),
-        expires_in: 5 * 3600,
+        refresh_token: refreshToken,
       },
     };
   }
 
+  /**
+   * Validates a customer's credentials.
+   * @param request - Login request.
+   * @param customer - Customer entity.
+   * @returns Validated customer or null if invalid.
+   */
   async validateCustomer(
     request: LoginCustomerRequest,
     customer: Customer,

@@ -78,12 +78,14 @@ export class AuthController {
       throw new HttpException({ errors: 'Unauthorized' }, 401);
     }
 
+    const result =
+      await this.authService.generateJwtForCustomer(isCustomerValid);
     this.logger.log(
       `AuthController.loginCustomer(\nrequest: ${JSON.stringify(request)}\n): success`,
     );
     return {
       message: 'Customer logged in successfully',
-      data: await this.authService.generateJwtForCustomer(isCustomerValid),
+      data: result,
     };
   }
 }
