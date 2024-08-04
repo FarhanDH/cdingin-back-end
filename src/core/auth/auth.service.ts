@@ -52,6 +52,13 @@ export class AuthService {
       secret: config().jwtConstants.secretRefreshToken,
     });
 
+    const isRefreshTokenExistInRedis = await this.redis.get(
+      `user:${customer.id}:refreshToken`,
+    );
+    if (isRefreshTokenExistInRedis) {
+      await this.redis.del(`user:${customer.id}:refreshToken`);
+    }
+
     // Store refresh token in Redis with 7-day TTL
     await this.redis.set(
       `user:${customer.id}:refreshToken`,

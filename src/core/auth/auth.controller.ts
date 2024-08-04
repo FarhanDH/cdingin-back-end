@@ -1,11 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   HttpException,
   HttpStatus,
   Logger,
+  Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { ContactService } from '../contact/contact.service';
 import { CustomerService } from '../customer/customer.service';
@@ -16,6 +19,7 @@ import {
   LoginCustomerRequest,
 } from '../models/customer.model';
 import { AuthService } from './auth.service';
+import { JwtGuard } from './guards/jwt.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -86,6 +90,15 @@ export class AuthController {
     return {
       message: 'Customer logged in successfully',
       data: result,
+    };
+  }
+
+  @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
+  @Delete('logout/:userId')
+  async logout(@Param('userId') userId: string) {
+    return {
+      message: 'User logged out successfully',
     };
   }
 }
