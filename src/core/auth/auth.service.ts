@@ -1,16 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JwtPayload } from '../models/auth.model';
+import { JwtPayload, LoginCustomerRequest } from '../models/auth.model';
 import { JwtService } from '@nestjs/jwt';
 import { Customer } from '../customer/entities/customer.entity';
-import {
-  CustomerResponse,
-  LoginCustomerRequest,
-  toCustomerResponse,
-} from '../models/customer.model';
+import { CustomerResponse, toCustomerResponse } from '../models/customer.model';
 import { compare } from 'bcrypt';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 import { config } from '~/common/config';
+import { Role } from '~/common/utils';
+import { Technician } from '../technicians/entities/technician.entity';
 
 /**
  * Service responsible for handling authentication.
@@ -38,44 +36,10 @@ export class AuthService {
    * @returns Customer response with JWT token.
    */
   async generateJwtForCustomer(customer: Customer): Promise<CustomerResponse> {
-    const payload: JwtPayload = {
-      id: customer.id,
-      name: customer.name,
-      role: 'customer',
-    };
-
     const customerData = toCustomerResponse(customer);
-
-    // Generate refresh token with 7-day expiration
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '7d',
-      secret: config().jwtConstants.secretRefreshToken,
-    });
-
-    const isRefreshTokenExistInRedis = await this.redis.get(
-      `user:${customer.id}:refreshToken`,
-    );
-    if (isRefreshTokenExistInRedis) {
-      await this.redis.del(`user:${customer.id}:refreshToken`);
-    }
-
-    // Store refresh token in Redis with 7-day TTL
-    await this.redis.set(
-      `user:${customer.id}:refreshToken`,
-      refreshToken,
-      'EX',
-      7 * 24 * 60 * 60, // 7 days in seconds
-    );
-
     return {
       ...customerData,
-      token: {
-        access_token: await this.jwtService.signAsync(payload, {
-          expiresIn: '15m',
-          secret: config().jwtConstants.secretAccessToken,
-        }),
-        refresh_token: refreshToken,
-      },
+      tokens: await this.generateTokens(Role.Customer, customer),
     };
   }
 
@@ -85,16 +49,73 @@ export class AuthService {
    * @param customer - Customer entity.
    * @returns Validated customer or null if invalid.
    */
-  async validateCustomer(
+  async validateCustomerCredentials(
     request: LoginCustomerRequest,
     customer: Customer,
   ): Promise<Customer | null> {
     this.logger.debug(
-      `AuthService.validateCustomer(\nrequest: ${JSON.stringify(request)}, \ncustomer: ${JSON.stringify(customer)}\n)`,
+      `AuthService.validateCustomerCredentials(\nrequest: ${JSON.stringify(request)}, \ncustomer: ${JSON.stringify(customer)}\n)`,
     );
     if (!(await compare(request.password, customer.password))) {
       return null;
     }
     return customer;
+  }
+
+  async generateTokens(
+    role: Role,
+    user: Customer | Technician,
+  ): Promise<{ access_token: string; refresh_token: string }> {
+    const payload: JwtPayload = {
+      sub: user.id,
+      name: user.name,
+      role: role,
+    };
+
+    // Generate access and refresh tokens
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        expiresIn: '15m', // access token expires in 15 minutes
+        secret: config().jwtConstants.secretAccessToken,
+      }),
+      this.jwtService.signAsync(payload, {
+        expiresIn: '7d', // refresh token expires in 7 days
+        secret: config().jwtConstants.secretRefreshToken,
+      }),
+    ]);
+
+    const isRefreshTokenExistInRedis = await this.redis.get(
+      this.refreshTokenKeyRedis(user.id),
+    );
+    if (isRefreshTokenExistInRedis) {
+      await this.redis.del(this.refreshTokenKeyRedis(user.id));
+    }
+
+    // Store refresh token in Redis with 7-day TTL
+    await this.redis.set(
+      this.refreshTokenKeyRedis(user.id),
+      refreshToken,
+      'EX',
+      7 * 24 * 60 * 60, // 7 days in seconds
+    );
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
+  }
+
+  async revokeRefreshTokenFromRedis(
+    userPayload: JwtPayload,
+  ): Promise<JwtPayload> {
+    this.logger.debug(
+      `AuthService.revokeRefreshTokenFromRedis(${userPayload.sub})`,
+    );
+    await this.redis.del(this.refreshTokenKeyRedis(userPayload.sub));
+    return userPayload;
+  }
+
+  private refreshTokenKeyRedis(userId: string): string {
+    return `user:${userId}:refreshToken`;
   }
 }

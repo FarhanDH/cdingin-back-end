@@ -88,7 +88,7 @@ Response Body (Failed) :
 
 ## Logout User
 
-Endpoint : DELETE /api/users/current
+Endpoint : DELETE /api/auth/logout
 
 Headers :
 

@@ -1,11 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import {
-  IsNotEmpty,
-  IsPhoneNumber,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { Customer } from '../customer/entities/customer.entity';
 import { CreateContactRequest } from './contact.model';
 
@@ -23,20 +17,6 @@ export class CreateCustomerRequest extends CreateContactRequest {
   password: string;
 }
 
-export class LoginCustomerRequest {
-  @IsNotEmpty()
-  @IsPhoneNumber('ID')
-  @MinLength(10)
-  @MaxLength(15)
-  phone: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(6)
-  @MaxLength(100)
-  password: string;
-}
-
 export class UpdateCustomerDto extends PartialType(CreateCustomerRequest) {}
 
 export class CustomerResponse {
@@ -46,7 +26,7 @@ export class CustomerResponse {
   email: string;
   date_created: Date;
   date_modified: Date;
-  token?: {
+  tokens?: {
     access_token: string;
     refresh_token: string;
   };

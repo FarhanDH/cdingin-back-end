@@ -6,17 +6,18 @@ import {
   HttpException,
   HttpStatus,
   Logger,
-  Param,
   Post,
+  Request,
   UseGuards,
 } from '@nestjs/common';
+import { RequestWithUser } from '~/common/utils';
 import { ContactService } from '../contact/contact.service';
 import { CustomerService } from '../customer/customer.service';
 import { Response } from '../models/api-response.model';
+import { LoginCustomerRequest } from '../models/auth.model';
 import {
   CreateCustomerRequest,
   CustomerResponse,
-  LoginCustomerRequest,
 } from '../models/customer.model';
 import { AuthService } from './auth.service';
 import { JwtGuard } from './guards/jwt.guard';
@@ -73,13 +74,13 @@ export class AuthController {
       this.logger.error('Customer not found');
       throw new HttpException({ errors: 'Customer not found' }, 404);
     }
-    const isCustomerValid = await this.authService.validateCustomer(
+    const isCustomerValid = await this.authService.validateCustomerCredentials(
       request,
       customer,
     );
     if (!isCustomerValid) {
-      this.logger.error('Unauthorized');
-      throw new HttpException({ errors: 'Unauthorized' }, 401);
+      this.logger.error('Phone or password is wrong');
+      throw new HttpException({ errors: 'Phone or password is wrong' }, 401);
     }
 
     const result =
@@ -95,10 +96,28 @@ export class AuthController {
 
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
-  @Delete('logout/:userId')
-  async logout(@Param('userId') userId: string) {
-    return {
-      message: 'User logged out successfully',
-    };
+  @Delete('logout')
+  async logout(
+    @Request() request: RequestWithUser,
+  ): Promise<Response<boolean>> {
+    console.log(request.user);
+    this.logger.debug(
+      `AuthController.logout(\nrequest: ${JSON.stringify(request.user)}\n)`,
+    );
+    try {
+      await this.authService.revokeRefreshTokenFromRedis(request.user);
+      this.logger.log(
+        `AuthController.logout(\nrequest: ${JSON.stringify(request.user)}\n): Success`,
+      );
+      return {
+        message: 'User logged out successfully',
+        data: true,
+      };
+    } catch (error) {
+      this.logger.error(
+        `AuthController.logout(\nrequest: ${JSON.stringify(request.user)}\n): ${error.message}`,
+      );
+      throw new HttpException({ errors: error.message }, 500);
+    }
   }
 }

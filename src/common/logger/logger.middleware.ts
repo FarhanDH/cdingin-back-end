@@ -19,8 +19,16 @@ export class AppLoggerMiddleware implements NestMiddleware {
    * @return {void} This function does not return a value.
    */
   use(request: Request, response: Response, next: NextFunction): void {
-    const { ip, method, originalUrl: url, params, query, body } = request;
-    const userAgent = request.get('user-agent') || 'unknown';
+    const {
+      ip,
+      method,
+      originalUrl: url,
+      params,
+      query,
+      body,
+      headers,
+    } = request;
+    const userAgent = request.get('user-agent') ?? 'unknown';
     const startTime = Date.now();
     const requestId = uuidv7();
 
@@ -34,6 +42,7 @@ export class AppLoggerMiddleware implements NestMiddleware {
       method,
       params,
       query,
+      headers,
       body,
       userAgent,
     };
