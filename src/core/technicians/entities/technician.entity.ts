@@ -16,8 +16,12 @@ export class Technician {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
+  @Column({ type: 'date' })
+  date_of_birth: Date;
+
   @OneToOne(() => Contact, {
     cascade: true,
+    eager: true,
   })
   @JoinColumn({ name: 'contact_id' })
   contact: Contact;

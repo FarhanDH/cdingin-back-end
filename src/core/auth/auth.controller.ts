@@ -24,6 +24,11 @@ import {
 import { AuthService } from './auth.service';
 import { JwtGuard } from './guards/jwt.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import {
+  CreateTechnicianRequest,
+  TechnicianResponse,
+} from '../models/technician.model';
+import { TechniciansService } from '../technicians/technicians.service';
 
 @Controller('auth')
 export class AuthController {
@@ -32,6 +37,7 @@ export class AuthController {
     private readonly customerService: CustomerService,
     private readonly contactService: ContactService,
     private readonly refreshTokenGuard: RefreshTokenGuard,
+    private readonly techniciansService: TechniciansService,
   ) {}
   private readonly logger: Logger = new Logger(AuthController.name);
 
@@ -159,6 +165,34 @@ export class AuthController {
     );
     return {
       message: 'Customer refreshed token successfully',
+      data: result,
+    };
+  }
+
+  @Post('technicians/register')
+  async registerTechnician(
+    @Body() request: CreateTechnicianRequest,
+  ): Promise<Response<TechnicianResponse>> {
+    // is phone and email already registered
+    const [isPhoneAlreadyRegistered, isEmailAlreadyRegistered] =
+      await Promise.all([
+        this.contactService.getContactByPhone(request.phone),
+        this.contactService.getContactByEmail(request.email),
+      ]);
+
+    if (isPhoneAlreadyRegistered) {
+      this.logger.warn('Phone already registered');
+      throw new HttpException({ errors: 'Phone already registered' }, 409);
+    }
+
+    if (isEmailAlreadyRegistered) {
+      this.logger.warn('Email already registered');
+      throw new HttpException({ errors: 'Email already registered' }, 409);
+    }
+
+    const result = await this.techniciansService.register(request);
+    return {
+      message: 'Technician registered successfully',
       data: result,
     };
   }

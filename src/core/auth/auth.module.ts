@@ -5,6 +5,7 @@ import { CustomerModule } from '../customer/customer.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { TechniciansModule } from '../technicians/technicians.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { RefreshTokenGuard } from './guards/refresh-token.guard';
     JwtModule.register({
       global: true,
     }),
+    TechniciansModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, RefreshTokenGuard],

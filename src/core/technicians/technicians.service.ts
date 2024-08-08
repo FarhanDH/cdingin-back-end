@@ -1,17 +1,19 @@
 import { HttpException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { hashSync } from 'bcrypt';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
   CreateTechnicianRequest,
   TechnicianResponse,
   toTechnicianResponse,
 } from '../models/technician.model';
 import { Technician } from './entities/technician.entity';
+import { Contact } from '../contact/entities/contact.entity';
 export class TechniciansService {
   constructor(
     @InjectRepository(Technician)
     private readonly techniciansRepository: Repository<Technician>,
+    private readonly dataSource: DataSource,
   ) {}
   private readonly logger: Logger = new Logger(TechniciansService.name);
 
@@ -23,13 +25,31 @@ export class TechniciansService {
     );
 
     try {
-      const user = new Technician();
-      user.name = request.name;
-      user.password = hashSync(request.password, 10);
-      const savedTechnician = await this.techniciansRepository.save(user);
+      const savedTechnician: Technician = await this.dataSource.transaction(
+        async (entityManager) => {
+          const contact = entityManager.create(Contact, {
+            phone: request.phone,
+            email: request.email,
+          });
+          await entityManager.save(contact);
+          const technician = entityManager.create(Technician, {
+            name: request.name,
+            date_of_birth: request.dateOfBirth,
+            password: hashSync(request.password, 10),
+            contact,
+          });
+          return await entityManager.save(technician);
+        },
+      );
+
+      this.logger.log(
+        `TechnicianService.create(${JSON.stringify(request)}): success`,
+      );
       return toTechnicianResponse(savedTechnician);
     } catch (error) {
-      this.logger.error(error.message);
+      this.logger.error(
+        `TechnicianService.create(${JSON.stringify(request)}): ${error.message}`,
+      );
       throw new HttpException(error.message, 500);
     }
   }
