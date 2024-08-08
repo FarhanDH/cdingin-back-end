@@ -4,6 +4,7 @@ import { ContactModule } from '../contact/contact.module';
 import { CustomerModule } from '../customer/customer.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { AuthService } from './auth.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, RefreshTokenGuard],
 })
 export class AuthModule {}

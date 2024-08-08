@@ -1,13 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { JwtPayload, LoginCustomerRequest } from '../models/auth.model';
-import { JwtService } from '@nestjs/jwt';
-import { Customer } from '../customer/entities/customer.entity';
-import { CustomerResponse, toCustomerResponse } from '../models/customer.model';
-import { compare } from 'bcrypt';
 import { InjectRedis } from '@nestjs-modules/ioredis';
+import { Injectable, Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { compare } from 'bcrypt';
 import Redis from 'ioredis';
 import { config } from '~/common/config';
 import { Role } from '~/common/utils';
+import { Customer } from '../customer/entities/customer.entity';
+import { JwtPayload, LoginCustomerRequest } from '../models/auth.model';
+import { CustomerResponse, toCustomerResponse } from '../models/customer.model';
 import { Technician } from '../technicians/entities/technician.entity';
 
 /**
@@ -103,6 +103,27 @@ export class AuthService {
       access_token: accessToken,
       refresh_token: refreshToken,
     };
+  }
+
+  async refreshTokenCustomer(
+    customer: Customer,
+    refreshToken: string,
+  ): Promise<CustomerResponse | null> {
+    this.logger.debug(
+      `AuthService.refreshTokenCustomer(${customer.id}, ${refreshToken})`,
+    );
+
+    const storedRefreshToken = await this.redis.get(
+      this.refreshTokenKeyRedis(customer.id),
+    );
+
+    if (!storedRefreshToken) {
+      // this.logger.error('Invalid refresh token');
+      console.log('storedRefreshToken: ', storedRefreshToken);
+      return null;
+    }
+
+    return await this.generateJwtForCustomer(customer);
   }
 
   async revokeRefreshTokenFromRedis(

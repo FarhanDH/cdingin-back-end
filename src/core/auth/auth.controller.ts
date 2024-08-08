@@ -6,8 +6,10 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  NotFoundException,
   Post,
   Request,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { RequestWithUser } from '~/common/utils';
@@ -21,6 +23,7 @@ import {
 } from '../models/customer.model';
 import { AuthService } from './auth.service';
 import { JwtGuard } from './guards/jwt.guard';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -28,6 +31,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly customerService: CustomerService,
     private readonly contactService: ContactService,
+    private readonly refreshTokenGuard: RefreshTokenGuard,
   ) {}
   private readonly logger: Logger = new Logger(AuthController.name);
 
@@ -119,5 +123,43 @@ export class AuthController {
       );
       throw new HttpException({ errors: error.message }, 500);
     }
+  }
+
+  @UseGuards(RefreshTokenGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  async refreshTokenCustomer(
+    @Request() request: RequestWithUser,
+  ): Promise<Response<CustomerResponse> | undefined> {
+    this.logger.debug(
+      `AuthController.refreshTokenCustomer(\nrequest: ${JSON.stringify(request.user)}\n)`,
+    );
+
+    const customerData = await this.customerService.getCustomerById(
+      request.user.sub,
+    );
+    if (!customerData) {
+      throw new NotFoundException('Customer not found');
+    }
+    const refreshToken =
+      this.refreshTokenGuard.extractRefreshTokenFromHeader(request);
+    if (!refreshToken) {
+      throw new NotFoundException('Refresh token not found');
+    }
+    const result = await this.authService.refreshTokenCustomer(
+      customerData,
+      refreshToken,
+    );
+    if (!result) {
+      this.logger.error('Refresh token is invalid or expired');
+      throw new UnauthorizedException('Refresh token is invalid or expired');
+    }
+    this.logger.log(
+      `AuthController.refreshTokenCustomer(\nrequest: ${JSON.stringify(request.user)}\n): Success`,
+    );
+    return {
+      message: 'Customer refreshed token successfully',
+      data: result,
+    };
   }
 }

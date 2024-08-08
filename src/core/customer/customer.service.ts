@@ -81,4 +81,14 @@ export class CustomerService {
       },
     });
   }
+
+  async getCustomerById(id: string): Promise<Customer | null> {
+    this.logger.debug(`CustomerService.getCustomerById(${id})`);
+    return await this.customerRepository.findOne({
+      where: { id },
+      relations: {
+        contact: true,
+      },
+    });
+  }
 }
