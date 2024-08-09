@@ -64,4 +64,15 @@ export class TechniciansService {
       },
     });
   }
+
+  // get technician by id
+  async getTechnicianById(id: string): Promise<Technician | null> {
+    this.logger.debug(`TechnicianService.getTechnicianById${id}`);
+    return await this.techniciansRepository.findOne({
+      where: { id },
+      relations: {
+        contact: true,
+      },
+    });
+  }
 }

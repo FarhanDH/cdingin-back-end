@@ -12,7 +12,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { RequestWithUser } from '~/common/utils';
+import { RequestWithUser, Role } from '~/common/utils';
 import { ContactService } from '../contact/contact.service';
 import { CustomerService } from '../customer/customer.service';
 import { Response } from '../models/api-response.model';
@@ -134,26 +134,55 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
-  async refreshTokenCustomer(
+  async refreshToken(
     @Request() request: RequestWithUser,
-  ): Promise<Response<CustomerResponse> | undefined> {
+  ): Promise<Response<CustomerResponse> | TechnicianResponse | undefined> {
     this.logger.debug(
-      `AuthController.refreshTokenCustomer(\nrequest: ${JSON.stringify(request.user)}\n)`,
+      `AuthController.refreshToken(\nrequest: ${JSON.stringify(request.user)}\n)`,
     );
 
-    const customerData = await this.customerService.getCustomerById(
-      request.user.sub,
-    );
-    if (!customerData) {
-      throw new NotFoundException('Customer not found');
-    }
     const refreshToken =
       this.refreshTokenGuard.extractRefreshTokenFromHeader(request);
     if (!refreshToken) {
       throw new NotFoundException('Refresh token not found');
     }
-    const result = await this.authService.refreshTokenCustomer(
-      customerData,
+
+    const user = request.user.role;
+
+    // handle refresh token if the role of user is Customer
+    if (user === Role.Customer) {
+      const customerData = await this.customerService.getCustomerById(
+        request.user.sub,
+      );
+      if (!customerData) {
+        throw new NotFoundException('Customer not found');
+      }
+      const result = await this.authService.refreshToken(
+        customerData,
+        refreshToken,
+      );
+      if (!result) {
+        this.logger.error('Refresh token is invalid or expired');
+        throw new UnauthorizedException('Refresh token is invalid or expired');
+      }
+      this.logger.log(
+        `AuthController.refreshTokenCustomer(\nrequest: ${JSON.stringify(request.user)}\n): Success`,
+      );
+      return {
+        message: 'Customer token successfully refreshed',
+        data: result,
+      };
+    }
+
+    // handle refresh token if the role of user is Technician
+    const technicianData = await this.techniciansService.getTechnicianById(
+      request.user.sub,
+    );
+    if (!technicianData) {
+      throw new NotFoundException('Technician not found');
+    }
+    const result = await this.authService.refreshToken(
+      technicianData,
       refreshToken,
     );
     if (!result) {
@@ -161,10 +190,10 @@ export class AuthController {
       throw new UnauthorizedException('Refresh token is invalid or expired');
     }
     this.logger.log(
-      `AuthController.refreshTokenCustomer(\nrequest: ${JSON.stringify(request.user)}\n): Success`,
+      `AuthController.refreshToken(\nrequest: ${JSON.stringify(request.user)}\n): Success`,
     );
     return {
-      message: 'Customer refreshed token successfully',
+      message: 'Technician token successfully refreshed',
       data: result,
     };
   }

@@ -91,6 +91,7 @@ export class AuthService {
     const isRefreshTokenExistInRedis = await this.redis.get(
       this.refreshTokenKeyRedis(user.id),
     );
+
     if (isRefreshTokenExistInRedis) {
       await this.redis.del(this.refreshTokenKeyRedis(user.id));
     }
@@ -109,25 +110,24 @@ export class AuthService {
     };
   }
 
-  async refreshTokenCustomer(
-    customer: Customer,
+  async refreshToken(
+    user: Customer | Technician,
     refreshToken: string,
-  ): Promise<CustomerResponse | null> {
-    this.logger.debug(
-      `AuthService.refreshTokenCustomer(${customer.id}, ${refreshToken})`,
-    );
+  ): Promise<CustomerResponse | TechnicianResponse | null> {
+    this.logger.debug(`AuthService.refreshToken(${user.id}, ${refreshToken})`);
 
     const storedRefreshToken = await this.redis.get(
-      this.refreshTokenKeyRedis(customer.id),
+      this.refreshTokenKeyRedis(user.id),
     );
 
-    if (!storedRefreshToken) {
-      // this.logger.error('Invalid refresh token');
-      console.log('storedRefreshToken: ', storedRefreshToken);
+    if (!storedRefreshToken || storedRefreshToken !== refreshToken) {
       return null;
     }
 
-    return await this.generateJwtForCustomer(customer);
+    if (user instanceof Customer) {
+      return await this.generateJwtForCustomer(user);
+    }
+    return await this.generateJwtForTechnician(user);
   }
 
   async revokeRefreshTokenFromRedis(
