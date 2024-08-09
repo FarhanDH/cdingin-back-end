@@ -19,6 +19,7 @@ export class Customer {
   @OneToOne(() => Contact, {
     cascade: true,
     eager: true,
+    onDelete: 'CASCADE', // Ensures that the contact is deleted when the customer is deleted
   })
   @JoinColumn({ name: 'contact_id' })
   contact: Contact;

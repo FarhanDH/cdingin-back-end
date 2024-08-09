@@ -22,6 +22,7 @@ export class Technician {
   @OneToOne(() => Contact, {
     cascade: true,
     eager: true,
+    onDelete: 'CASCADE', // Ensures that the contact is deleted when the technician is deleted
   })
   @JoinColumn({ name: 'contact_id' })
   contact: Contact;
@@ -32,7 +33,7 @@ export class Technician {
   @Column({ type: 'varchar', length: 100, nullable: true })
   image_url: string;
 
-  @Column({ type: 'varchar', length: 10, nullable: true })
+  @Column({ type: 'varchar', length: 10 })
   license_plate: string;
 
   @Column({ type: 'boolean', default: true })
