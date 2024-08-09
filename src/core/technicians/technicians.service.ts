@@ -35,6 +35,7 @@ export class TechniciansService {
           const technician = entityManager.create(Technician, {
             name: request.name,
             date_of_birth: request.dateOfBirth,
+            license_plate: request.licensePlate,
             password: hashSync(request.password, 10),
             contact,
           });
@@ -52,5 +53,15 @@ export class TechniciansService {
       );
       throw new HttpException(error.message, 500);
     }
+  }
+
+  async getTechnicianByPhone(phone: string): Promise<Technician | null> {
+    this.logger.debug(`TechniciansService.getTechnicianByPhone(${phone})`);
+    return await this.techniciansRepository.findOne({
+      where: { contact: { phone } },
+      relations: {
+        contact: true,
+      },
+    });
   }
 }

@@ -6,9 +6,13 @@ import Redis from 'ioredis';
 import { config } from '~/common/config';
 import { Role } from '~/common/utils';
 import { Customer } from '../customer/entities/customer.entity';
-import { JwtPayload, LoginCustomerRequest } from '../models/auth.model';
+import { JwtPayload, LoginRequest } from '../models/auth.model';
 import { CustomerResponse, toCustomerResponse } from '../models/customer.model';
 import { Technician } from '../technicians/entities/technician.entity';
+import {
+  TechnicianResponse,
+  toTechnicianResponse,
+} from '../models/technician.model';
 
 /**
  * Service responsible for handling authentication.
@@ -50,7 +54,7 @@ export class AuthService {
    * @returns Validated customer or null if invalid.
    */
   async validateCustomerCredentials(
-    request: LoginCustomerRequest,
+    request: LoginRequest,
     customer: Customer,
   ): Promise<Customer | null> {
     this.logger.debug(
@@ -138,5 +142,40 @@ export class AuthService {
 
   private refreshTokenKeyRedis(userId: string): string {
     return `user:${userId}:refreshToken`;
+  }
+
+  /**
+   * Validates a technician's credentials.
+   *
+   * @param request - The login request containing the phone number and password.
+   * @param technician - The technician entity to validate against.
+   *
+   * @returns A promise that resolves to the validated technician entity if the credentials are valid,
+   *          or `null` if the credentials are invalid.
+   *
+   * @remarks This function compares the provided password with the hashed password stored in the technician entity.
+   *          If the passwords match, the technician entity is returned. Otherwise, `null` is returned.
+   */
+  async validateTechnicianCredentials(
+    request: LoginRequest,
+    technician: Technician,
+  ): Promise<Technician | null> {
+    this.logger.debug(
+      `AuthService.validateTechnicianCredentials(\nrequest: ${JSON.stringify(request)}, \ntechnician: ${JSON.stringify(technician)}\n)`,
+    );
+    if (!(await compare(request.password, technician.password))) {
+      return null;
+    }
+    return technician;
+  }
+
+  async generateJwtForTechnician(
+    technician: Technician,
+  ): Promise<TechnicianResponse> {
+    const technicianData = toTechnicianResponse(technician);
+    return {
+      ...technicianData,
+      tokens: await this.generateTokens(Role.Technician, technician),
+    };
   }
 }

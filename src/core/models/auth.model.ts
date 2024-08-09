@@ -12,7 +12,7 @@ export class JwtPayload {
   role: string;
 }
 
-export class LoginCustomerRequest {
+export class LoginRequest {
   @IsNotEmpty()
   @IsPhoneNumber('ID')
   @MinLength(10)

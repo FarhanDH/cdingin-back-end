@@ -33,7 +33,7 @@ export class Technician {
   @Column({ type: 'varchar', length: 100, nullable: true })
   image_url: string;
 
-  @Column({ type: 'varchar', length: 10 })
+  @Column({ type: 'varchar', length: 10, unique: true })
   license_plate: string;
 
   @Column({ type: 'boolean', default: true })

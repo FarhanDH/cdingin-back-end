@@ -16,7 +16,7 @@ import { RequestWithUser } from '~/common/utils';
 import { ContactService } from '../contact/contact.service';
 import { CustomerService } from '../customer/customer.service';
 import { Response } from '../models/api-response.model';
-import { LoginCustomerRequest } from '../models/auth.model';
+import { LoginRequest } from '../models/auth.model';
 import {
   CreateCustomerRequest,
   CustomerResponse,
@@ -72,7 +72,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('customers/login')
   async loginCustomer(
-    @Body() request: LoginCustomerRequest,
+    @Body() request: LoginRequest,
   ): Promise<Response<CustomerResponse>> {
     this.logger.debug(
       `AuthController.loginCustomer(\nrequest: ${JSON.stringify(request)}\n)`,
@@ -193,6 +193,41 @@ export class AuthController {
     const result = await this.techniciansService.register(request);
     return {
       message: 'Technician registered successfully',
+      data: result,
+    };
+  }
+
+  @Post('technicians/login')
+  async loginTechnician(
+    @Body() requestBody: LoginRequest,
+  ): Promise<Response<TechnicianResponse>> {
+    this.logger.debug(
+      `AuthController.loginTechnician(\nrequest: ${JSON.stringify(requestBody)}\n)`,
+    );
+    const technician = await this.techniciansService.getTechnicianByPhone(
+      requestBody.phone,
+    );
+    if (!technician) {
+      this.logger.error('Technician not found');
+      throw new HttpException({ errors: 'Technician not found' }, 404);
+    }
+    const isTechnicianValid =
+      await this.authService.validateTechnicianCredentials(
+        requestBody,
+        technician,
+      );
+    if (!isTechnicianValid) {
+      this.logger.error('Phone or password is wrong');
+      throw new HttpException({ errors: 'Phone or password is wrong' }, 401);
+    }
+
+    const result =
+      await this.authService.generateJwtForTechnician(isTechnicianValid);
+    this.logger.log(
+      `AuthController.loginTechnician(\nrequest: ${JSON.stringify(requestBody)}\n): success`,
+    );
+    return {
+      message: 'Technician logged in successfully',
       data: result,
     };
   }
