@@ -9,6 +9,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { config } from './common/config';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/http-exception.filter';
+import { ProblemTypeModule } from './core/problem-type/problem-type.module';
 
 @Module({
   providers: [
@@ -27,6 +28,7 @@ import { HttpExceptionFilter } from './common/http-exception.filter';
       type: 'single',
       url: config().redis.url,
     }),
+    ProblemTypeModule,
   ],
   controllers: [AppController],
 })
