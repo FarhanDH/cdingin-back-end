@@ -11,6 +11,7 @@ Request Body :
   "name": "Joko Sasongko",
   "phone": "62812345678",
   "dayOfBirth": "1979-01-01",
+  "licensePlate": "A 123 BCD",
   "email": "jokosasongko@mail.com", // Optional
   "password": "secret"
 }
@@ -25,6 +26,7 @@ Response Body (Success) :
     "name": "Joko Sasongko",
     "phone": "62812345678",
     "dayOfBirth": "1979-01-01",
+    "licensePlate": "A 123 BCD",
     "email": "jokosasongko@mail.com", // can be null if empty
     "date_created": "2024-09-09",
     "date_modified": "2024-09-09"
@@ -62,12 +64,13 @@ Response Body (Success) :
     "name": "Joko Sasongko",
     "phone": "62812345678",
     "dayOfBirth": "1979-01-01",
+    "licensePlate": "A 123 BCD",
     "email": "jokosasongko@mail.com", // can be null if empty
     "date_created": "2024-09-09",
     "date_modified": "2024-09-09",
     "token": {
-      "access_token": "jwt_generated",
-      "expires_in": "123453"
+      "access_token": "token_generated",
+      "refresh_token": "token_generated"
     }
   }
 }
@@ -103,5 +106,42 @@ Response Body (Success) :
 {
   "message": "Technician logged out successfully"
   "data": true
+}
+```
+
+## Refresh Token Technician
+
+Endpoint : POST /api/auth/refresh
+
+Headers :
+
+- Authorization: Refresh Token
+
+Response Body (Success) :
+
+```json
+{
+  "message": "Customer token successfully refreshed",
+  "data": {
+    "name": "Joko Sasongko",
+    "phone": "62812345678",
+    "dayOfBirth": "1979-01-01",
+    "licensePlate": "A 123 BCD",
+    "email": "jokosasongko@mail.com", // can be null if empty
+    "date_created": "2024-09-09",
+    "date_modified": "2024-09-09",
+    "token": {
+      "access_token": "token_generated",
+      "refresh_token": "token_generated"
+    }
+  }
+}
+```
+
+Response Body (Failed) :
+
+```json
+{
+  "errors": "Refresh token is invalid or expired"
 }
 ```
