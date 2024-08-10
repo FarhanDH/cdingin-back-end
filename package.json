@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "typeorm-ts-node-commonjs",
     "db:create": "pnpx typeorm migration:create src/common/database/migrations/Migration",
-    "db:generate": "pnpm build && pnpx typeorm migration:generate -d dist/common/database/data-source.js src/common/database/migrations/Migration",
+    "db:generate": "nest build && pnpx typeorm migration:generate -d dist/common/database/data-source.js src/common/database/migrations/Migration",
     "db:migrate": "pnpx typeorm migration:run -d dist/common/database/data-source.js",
     "db:revert": "pnpx typeorm migration:revert -d dist/common/database/data-source.js",
     "db:show": "pnpx typeorm migration:show -d dist/common/database/data-source.js",

@@ -6,19 +6,53 @@ import {
   Patch,
   Param,
   Delete,
+  Logger,
+  HttpException,
 } from '@nestjs/common';
 import { ProblemTypeService } from './problem-type.service';
 import {
   CreateProblemTypeRequest,
+  ProblemTypeResponse,
   UpdateProblemTypeRequest,
 } from '../models/problem-type.model';
+import { Response } from '../models/api-response.model';
 @Controller('problem-type')
 export class ProblemTypeController {
   constructor(private readonly problemTypeService: ProblemTypeService) {}
+  private readonly logger: Logger = new Logger(ProblemTypeController.name);
 
   @Post()
-  create(@Body() request: CreateProblemTypeRequest) {
-    return this.problemTypeService.create(request);
+  async create(
+    @Body() requestBody: CreateProblemTypeRequest,
+  ): Promise<Response<ProblemTypeResponse>> {
+    this.logger.debug(
+      `ProblemTypeController.create(\n${JSON.stringify(requestBody)}\n)`,
+    );
+    let result;
+    // try {
+    // check if problem type is already exist by name
+    const isProblemTypeExistByName = await this.problemTypeService.getOneByName(
+      requestBody.name,
+    );
+    if (isProblemTypeExistByName) {
+      this.logger.error(`Problem type name already exist`);
+      throw new HttpException(
+        { errors: 'Problem type name already exist' },
+        409,
+      );
+    }
+
+    result = await this.problemTypeService.create(requestBody);
+    // } catch (error) {
+    //   this.logger.error(
+    //     `ProblemTypeController.create(${JSON.stringify(requestBody)}): ${error.message}`,
+    //   );
+    //   throw new HttpException({ errors: error.message }, 500);
+    // }
+    return {
+      message: 'Problem type created successfully',
+      data: result,
+    };
   }
 
   @Get()
@@ -28,7 +62,7 @@ export class ProblemTypeController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.problemTypeService.findOne(+id);
+    return this.problemTypeService.getOneById(+id);
   }
 
   @Patch(':id')
