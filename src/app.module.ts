@@ -7,9 +7,10 @@ import { CustomerModule } from './core/customer/customer.module';
 import { TechniciansModule } from './core/technicians/technicians.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { config } from './common/config';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import { ProblemTypeModule } from './core/problem-type/problem-type.module';
+import { ResponseInterceptor } from './common/response.interceptor';
 
 @Module({
   providers: [
@@ -17,7 +18,12 @@ import { ProblemTypeModule } from './core/problem-type/problem-type.module';
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
   ],
+
   imports: [
     CommonModule,
     CustomerModule,

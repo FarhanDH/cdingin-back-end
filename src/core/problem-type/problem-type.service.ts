@@ -1,12 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import {
   CreateProblemTypeRequest,
   ProblemTypeResponse,
   toProblemTypeResponse,
-  UpdateProblemTypeRequest,
 } from '../models/problem-type.model';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { ProblemType } from './entities/problem-type.entity';
 
 @Injectable()
@@ -30,12 +29,22 @@ export class ProblemTypeService {
     return toProblemTypeResponse(savedProblemType);
   }
 
-  findAll() {
-    return `This action returns all problemType`;
+  async getAll(): Promise<ProblemTypeResponse[] | null> {
+    this.logger.debug(`ProblemTypeService.getAll()`);
+    // get all problem types
+    const problemTypes = await this.problemTypesRepository.find();
+    // if (problemTypes.length === 0) return null;
+    return problemTypes.map(toProblemTypeResponse);
   }
 
-  getOneById(id: number) {
-    return `This action returns a #${id} problemType`;
+  async getOneById(id: number): Promise<ProblemTypeResponse | null> {
+    this.logger.debug(`ProblemTypeService.getOneById(${id})`);
+    const problemType = await this.problemTypesRepository.findOneBy({
+      id,
+    });
+    if (!problemType) return null;
+
+    return toProblemTypeResponse(problemType);
   }
 
   async getOneByName(name: string): Promise<ProblemTypeResponse | null> {
@@ -48,11 +57,19 @@ export class ProblemTypeService {
     return toProblemTypeResponse(problemType);
   }
 
-  update(id: number, requestBody: UpdateProblemTypeRequest) {
-    return `This action updates a #${id} problemType`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} problemType`;
+  /**
+   * Deletes a problem type by its ID.
+   *
+   * @param id - The unique identifier of the problem type to delete.
+   * @returns A promise that resolves to the deleted problem type, or null if no problem type was found with the given ID.
+   *          The returned object is transformed into a ProblemTypeResponse using the `toProblemTypeResponse` function.
+   * @throws Will throw an error if the deletion operation fails.
+   */
+  async deleteById(id: number): Promise<ProblemTypeResponse | null> {
+    this.logger.debug(`ProblemTypeService.deleteById(${id})`);
+    const problemType = await this.problemTypesRepository.delete({ id });
+    if (problemType.affected === 0) return null;
+    console.log(problemType.affected);
+    return toProblemTypeResponse(problemType.raw);
   }
 }

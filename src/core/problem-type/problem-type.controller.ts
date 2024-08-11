@@ -1,21 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  Logger,
+  Get,
   HttpException,
+  Logger,
+  Param,
+  ParseIntPipe,
+  Post,
 } from '@nestjs/common';
-import { ProblemTypeService } from './problem-type.service';
+import { Response } from '../models/api-response.model';
 import {
   CreateProblemTypeRequest,
   ProblemTypeResponse,
-  UpdateProblemTypeRequest,
 } from '../models/problem-type.model';
-import { Response } from '../models/api-response.model';
+import { ProblemTypeService } from './problem-type.service';
 @Controller('problem-type')
 export class ProblemTypeController {
   constructor(private readonly problemTypeService: ProblemTypeService) {}
@@ -28,7 +27,7 @@ export class ProblemTypeController {
     this.logger.debug(
       `ProblemTypeController.create(\n${JSON.stringify(requestBody)}\n)`,
     );
-    let result;
+    // let result;
     // try {
     // check if problem type is already exist by name
     const isProblemTypeExistByName = await this.problemTypeService.getOneByName(
@@ -42,12 +41,13 @@ export class ProblemTypeController {
       );
     }
 
-    result = await this.problemTypeService.create(requestBody);
+    const result = await this.problemTypeService.create(requestBody);
     // } catch (error) {
+    //   console.log(error);
     //   this.logger.error(
     //     `ProblemTypeController.create(${JSON.stringify(requestBody)}): ${error.message}`,
     //   );
-    //   throw new HttpException({ errors: error.message }, 500);
+    //   throw new HttpException({ errors: error.response.errors }, error.status);
     // }
     return {
       message: 'Problem type created successfully',
@@ -56,25 +56,47 @@ export class ProblemTypeController {
   }
 
   @Get()
-  findAll() {
-    return this.problemTypeService.findAll();
+  async getAll(): Promise<Response<ProblemTypeResponse[]>> {
+    this.logger.debug(`ProblemTypeController.getAll()`);
+    const results = await this.problemTypeService.getAll();
+    this.logger.log(`ProblemTypeController.getAll(): success`);
+    return {
+      message: 'Problem types retrieved successfully',
+      data: results ?? [],
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.problemTypeService.getOneById(+id);
-  }
+  async getOneById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Response<ProblemTypeResponse>> {
+    this.logger.debug(`ProblemTypeController.getOneById(${id})`);
+    const result = await this.problemTypeService.getOneById(id);
+    if (!result) {
+      this.logger.error(`ProblemTypeController.getOneById(${id}): not found`);
+      throw new HttpException({ errors: 'Problem type not found' }, 404);
+    }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() requestBody: UpdateProblemTypeRequest,
-  ) {
-    return this.problemTypeService.update(+id, requestBody);
+    this.logger.log(`ProblemTypeController.getOneById(${id}): success`);
+    return {
+      message: 'Problem type retrieved successfully',
+      data: result,
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.problemTypeService.remove(+id);
+  async deleteById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Response<ProblemTypeResponse>> {
+    this.logger.debug(`ProblemTypeController.deleteById(${id})`);
+    const result = await this.problemTypeService.deleteById(id);
+    if (!result) {
+      this.logger.error(`ProblemTypeController.deleteById(${id}): not found`);
+      throw new HttpException({ errors: 'Problem type not found' }, 404);
+    }
+    this.logger.log(`ProblemTypeController.deleteById(${id}): success`);
+    return {
+      message: `Problem type  with id ${id} deleted successfully`,
+    };
   }
 }
