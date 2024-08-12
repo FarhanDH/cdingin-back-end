@@ -11,6 +11,7 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import { ProblemTypeModule } from './core/problem-type/problem-type.module';
 import { ResponseInterceptor } from './common/response.interceptor';
+import { AcTypeModule } from './core/ac-type/ac-type.module';
 
 @Module({
   providers: [
@@ -35,6 +36,7 @@ import { ResponseInterceptor } from './common/response.interceptor';
       url: config().redis.url,
     }),
     ProblemTypeModule,
+    AcTypeModule,
   ],
   controllers: [AppController],
 })
