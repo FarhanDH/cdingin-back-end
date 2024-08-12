@@ -33,7 +33,7 @@ export class ProblemTypeService {
     this.logger.debug(`ProblemTypeService.getAll()`);
     // get all problem types
     const problemTypes = await this.problemTypesRepository.find();
-    // if (problemTypes.length === 0) return null;
+
     return problemTypes.map(toProblemTypeResponse);
   }
 
