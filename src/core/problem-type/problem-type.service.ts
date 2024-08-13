@@ -86,7 +86,6 @@ export class ProblemTypeService {
     this.logger.debug(`ProblemTypeService.deleteById(${id})`);
     const problemType = await this.problemTypesRepository.delete({ id });
     if (problemType.affected === 0) return null;
-    console.log(problemType.affected);
     return toProblemTypeResponse(problemType.raw);
   }
 }

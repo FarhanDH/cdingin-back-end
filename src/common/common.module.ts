@@ -8,6 +8,7 @@ import { config } from './config';
 import { DatabaseModule } from './database/database.module';
 import { AppLoggerMiddleware } from './logger/logger.middleware';
 import { AcTypeController } from '~/core/ac-type/ac-type.controller';
+import { BuildingTypeController } from '~/core/building-type/building-type.controller';
 
 @Module({
   providers: [],
@@ -24,6 +25,7 @@ export class CommonModule implements NestModule {
       .forRoutes(
         AcTypeController,
         AuthController,
+        BuildingTypeController,
         CustomerController,
         TechniciansController,
         ProblemTypeController,

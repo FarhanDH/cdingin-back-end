@@ -12,6 +12,7 @@ import { HttpExceptionFilter } from './common/http-exception.filter';
 import { ProblemTypeModule } from './core/problem-type/problem-type.module';
 import { ResponseInterceptor } from './common/response.interceptor';
 import { AcTypeModule } from './core/ac-type/ac-type.module';
+import { BuildingTypeModule } from './core/building-type/building-type.module';
 
 @Module({
   providers: [
@@ -37,6 +38,7 @@ import { AcTypeModule } from './core/ac-type/ac-type.module';
     }),
     ProblemTypeModule,
     AcTypeModule,
+    BuildingTypeModule,
   ],
   controllers: [AppController],
 })
