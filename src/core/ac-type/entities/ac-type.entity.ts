@@ -18,4 +18,10 @@ export class AcType {
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   date_created: Date;
+
+  @CreateDateColumn({
+    type: 'timestamp with time zone',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  date_modified: Date;
 }

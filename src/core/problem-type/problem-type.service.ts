@@ -29,6 +29,23 @@ export class ProblemTypeService {
     return toProblemTypeResponse(savedProblemType);
   }
 
+  /**
+   * Seeds the database with an array of problem types.
+   *
+   * @param {ProblemType[]} problemTypesSeeds - The array of problem types to be seeded into the database.
+   * @return {Promise<ProblemTypeResponse[]>} An array of ProblemTypeResponse objects representing the saved entities.
+   */
+  async seeds(
+    problemTypesSeeds: ProblemType[],
+  ): Promise<ProblemTypeResponse[]> {
+    this.logger.debug(
+      `ProblemTypeService.seeds(\n${JSON.stringify(problemTypesSeeds)}\n)`,
+    );
+    const savedProblemTypes =
+      await this.problemTypesRepository.save(problemTypesSeeds);
+    return savedProblemTypes.map(toProblemTypeResponse);
+  }
+
   async getAll(): Promise<ProblemTypeResponse[] | null> {
     this.logger.debug(`ProblemTypeService.getAll()`);
     // get all problem types

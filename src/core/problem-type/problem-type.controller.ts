@@ -15,6 +15,7 @@ import {
   ProblemTypeResponse,
 } from '../models/problem-type.model';
 import { ProblemTypeService } from './problem-type.service';
+import { problemTypesSeeds } from './seeds/problem-type.seed';
 @Controller('problem-type')
 export class ProblemTypeController {
   constructor(private readonly problemTypeService: ProblemTypeService) {}
@@ -51,6 +52,16 @@ export class ProblemTypeController {
     // }
     return {
       message: 'Problem type created successfully',
+      data: result,
+    };
+  }
+
+  @Post('seeds')
+  async seeds(): Promise<Response<ProblemTypeResponse[]>> {
+    this.logger.debug(`ProblemTypeController.seeds()`);
+    const result = await this.problemTypeService.seeds(problemTypesSeeds);
+    return {
+      message: 'Problem types seeded successfully',
       data: result,
     };
   }

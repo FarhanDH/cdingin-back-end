@@ -12,6 +12,7 @@ import {
 import { AcTypeService } from './ac-type.service';
 import { AcTypeResponse, CreateAcTypeRequest } from '../models/ac-type.model';
 import { Response } from '../models/api-response.model';
+import { acTypesSeeds } from './seeds/ac-type.seed';
 
 @Controller('ac-type')
 export class AcTypeController {
@@ -36,6 +37,16 @@ export class AcTypeController {
     );
     return {
       message: 'AC type created successfully',
+      data: result,
+    };
+  }
+
+  @Post('seeds')
+  async seeds(): Promise<Response<AcTypeResponse[]>> {
+    this.logger.debug(`AcTypeController.seeds()`);
+    const result = await this.acTypeService.seeds(acTypesSeeds);
+    return {
+      message: 'AC types seeded successfully',
       data: result,
     };
   }

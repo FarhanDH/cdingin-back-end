@@ -23,6 +23,7 @@ export class ProblemTypeResponse {
   name: string;
   description: string;
   date_created: Date;
+  date_modified: Date;
 }
 
 export const toProblemTypeResponse = (
@@ -33,5 +34,6 @@ export const toProblemTypeResponse = (
     name: problemType.name,
     description: problemType.description,
     date_created: problemType.date_created,
+    date_modified: problemType.date_modified,
   };
 };

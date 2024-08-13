@@ -20,13 +20,15 @@ export class AcTypeResponse {
   name: string;
   description: string;
   date_created: Date;
+  date_modified: Date;
 }
 
-export const toAcTypeResponse = (acType: AcType) => {
+export const toAcTypeResponse = (acType: AcType): AcTypeResponse => {
   return {
     id: acType.id,
     name: acType.name,
     description: acType.description,
     date_created: acType.date_created,
+    date_modified: acType.date_modified,
   };
 };

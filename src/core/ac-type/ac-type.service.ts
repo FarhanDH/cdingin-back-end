@@ -30,6 +30,20 @@ export class AcTypeService {
     return toAcTypeResponse(savedAcType);
   }
 
+  /**
+   * Seeds the database with an array of AcType entities.
+   *
+   * @param {AcType[]} acTypesSeeds - The array of AcType entities to be seeded into the database.
+   * @return {Promise<AcTypeResponse[]>} An array of AcTypeResponse objects representing the saved entities.
+   */
+  async seeds(acTypesSeeds: AcType[]): Promise<AcTypeResponse[]> {
+    this.logger.debug(
+      `AcTypeService.seeds(\n${JSON.stringify(acTypesSeeds)}\n)`,
+    );
+    const savedAcTypes = await this.acTypeRepository.save(acTypesSeeds);
+    return savedAcTypes.map(toAcTypeResponse);
+  }
+
   async getOneByName(name: string): Promise<AcType | null> {
     this.logger.debug(`AcTypeService.getOneByName(${name})`);
     return await this.acTypeRepository.findOneBy({ name });
