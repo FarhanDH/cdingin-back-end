@@ -76,7 +76,7 @@
 }
 ```
 
-> [!Response Failed]
+> [!CAUTION]
 >
 > - `400 Bad Request`: `If request body is invalid`
 > - `401 Unauthorized`: `If token is invalid`
@@ -148,7 +148,7 @@
 }
 ```
 
-> [!Response Failed]
+> [!CAUTION]
 >
 > - `401 Unauthorized`: `If token is invalid`
 > - `404 Not Found`: `If ac, building, and problem type not found`
@@ -218,7 +218,7 @@
 }
 ```
 
-> [!Response Failed]
+> [!CAUTION]
 >
 > - `401 Unauthorized`: `If token is invalid`
 > - `403 Forbidden`: `If technician is not available`
@@ -298,6 +298,6 @@
 }
 ```
 
-> [!Response Failed]
+> [!CAUTION]
 >
 > - `401 Unauthorized`: `If token is invalid`
