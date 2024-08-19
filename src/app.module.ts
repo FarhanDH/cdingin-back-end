@@ -13,6 +13,7 @@ import { ProblemTypeModule } from './core/problem-type/problem-type.module';
 import { ResponseInterceptor } from './common/response.interceptor';
 import { AcTypeModule } from './core/ac-type/ac-type.module';
 import { BuildingTypeModule } from './core/building-type/building-type.module';
+import { OrderModule } from './core/order/order.module';
 
 @Module({
   providers: [
@@ -39,6 +40,7 @@ import { BuildingTypeModule } from './core/building-type/building-type.module';
     ProblemTypeModule,
     AcTypeModule,
     BuildingTypeModule,
+    OrderModule,
   ],
   controllers: [AppController],
 })
