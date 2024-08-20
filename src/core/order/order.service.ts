@@ -8,13 +8,39 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { Repository } from 'typeorm';
 
+/**
+ * OrderService is a service class that handles order related operations.
+ */
 @Injectable()
 export class OrderService {
+  /**
+   * The repository for Order entity.
+   */
+  private readonly orderRepository: Repository<Order>;
+
+  /**
+   * The logger for OrderService.
+   */
+  private readonly logger: Logger = new Logger(OrderService.name);
+
+  /**
+   * OrderService constructor.
+   * @param orderRepository The repository for Order entity.
+   */
   constructor(
     @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
-  ) {}
-  private readonly logger: Logger = new Logger(OrderService.name);
+    orderRepository: Repository<Order>,
+  ) {
+    this.orderRepository = orderRepository;
+  }
+
+  /**
+   * Create a new order.
+   * @param customerId The ID of the customer.
+   * @param requestBody The request body containing order details.
+   * @returns A promise that resolves to the created order.
+   * @throws HttpException if order is not found.
+   */
   async create(
     customerId: string,
     requestBody: CreateOrderRequest,
@@ -61,6 +87,11 @@ export class OrderService {
     }
   }
 
+  /**
+   * Retrieve an order by ID.
+   * @param id The ID of the order.
+   * @returns A promise that resolves to the order, or null if not found.
+   */
   async getOneById(id: string): Promise<Order | null> {
     this.logger.debug(`OrderService.getOneById(${id})`);
     const order = await this.orderRepository.findOne({
