@@ -2,8 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
+import { Order } from '~/core/order/entities/order.entity';
 
 @Entity('ac_types')
 export class AcType {
@@ -15,6 +18,9 @@ export class AcType {
 
   @Column({ type: 'varchar', length: 100 })
   description: string;
+
+  @OneToMany(() => Order, (order) => order.ac_type)
+  orders: Relation<Order>[];
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   date_created: Date;

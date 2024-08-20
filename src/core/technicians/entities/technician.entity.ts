@@ -3,14 +3,17 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
 import { Contact } from '~/core/contact/entities/contact.entity';
+import { Order } from '~/core/order/entities/order.entity';
 
-@Entity({ name: 'technicians' })
+@Entity('technicians')
 export class Technician {
-  @PrimaryGeneratedColumn('uuid', { name: 'id' })
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'varchar', length: 100 })
@@ -41,6 +44,9 @@ export class Technician {
 
   @Column({ type: 'varchar', length: 100 })
   password: string;
+
+  @OneToMany(() => Order, (order) => order.technician)
+  orders: Relation<Order>[];
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   date_created: Date;

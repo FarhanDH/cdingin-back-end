@@ -3,12 +3,15 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
 import { Contact } from '~/core/contact/entities/contact.entity';
+import { Order } from '~/core/order/entities/order.entity';
 
-@Entity({ name: 'customers' })
+@Entity('customers')
 export class Customer {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
@@ -26,6 +29,9 @@ export class Customer {
 
   @Column({ type: 'varchar', length: 100 })
   password: string;
+
+  @OneToMany(() => Order, (order) => order.customer)
+  orders: Relation<Order>[];
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   date_created: Date;

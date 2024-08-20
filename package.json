@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "typeorm-ts-node-commonjs",
     "db:create": "pnpx typeorm migration:create src/common/database/migrations/Migration",
-    "db:generate": "nest build && pnpx typeorm migration:generate -d dist/common/database/data-source.js src/common/database/migrations/Migration",
+    "db:generate": "pnpm build && pnpx typeorm migration:generate -d dist/common/database/data-source.js src/common/database/migrations/Migration",
     "db:migrate": "pnpx typeorm migration:run -d dist/common/database/data-source.js",
     "db:revert": "pnpx typeorm migration:revert -d dist/common/database/data-source.js",
     "db:show": "pnpx typeorm migration:show -d dist/common/database/data-source.js",
@@ -69,13 +69,20 @@
     "reflect-metadata": "^0.1.14",
     "source-map-support": "^0.5.21",
     "supertest": "^6.3.3",
-    "ts-jest": "^29.1.0",
+    "ts-jest": "^29.1.2",
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.3"
   },
   "jest": {
+    "moduleDirectories": [
+      "node_modules",
+      "<rootDir>"
+    ],
+    "moduleNameMapper": {
+      "^~/(.*)$": "<rootDir>/$1"
+    },
     "moduleFileExtensions": [
       "js",
       "json",

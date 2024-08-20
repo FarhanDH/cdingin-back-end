@@ -7,6 +7,7 @@ export const acTypesSeeds: AcType[] = [
     description: 'AC yang nempel di dinding',
     date_created: new Date(),
     date_modified: new Date(),
+    orders: [],
   },
   {
     id: 2,
@@ -14,6 +15,7 @@ export const acTypesSeeds: AcType[] = [
     description: 'AC yang diletakkan di langit-langit',
     date_created: new Date(),
     date_modified: new Date(),
+    orders: [],
   },
   {
     id: 3,
@@ -21,5 +23,6 @@ export const acTypesSeeds: AcType[] = [
     description: 'AC berdiri yang diletakkan di lantai',
     date_created: new Date(),
     date_modified: new Date(),
+    orders: [],
   },
 ];

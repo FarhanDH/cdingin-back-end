@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { AppLoggerMiddleware } from './logger/logger.middleware';
 import { AcTypeController } from '~/core/ac-type/ac-type.controller';
 import { BuildingTypeController } from '~/core/building-type/building-type.controller';
+import { OrderController } from '~/core/order/order.controller';
 
 @Module({
   providers: [],
@@ -27,6 +28,7 @@ export class CommonModule implements NestModule {
         AuthController,
         BuildingTypeController,
         CustomerController,
+        OrderController,
         TechniciansController,
         ProblemTypeController,
       );

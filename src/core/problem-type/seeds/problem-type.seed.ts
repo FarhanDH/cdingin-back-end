@@ -7,6 +7,7 @@ export const problemTypesSeeds: ProblemType[] = [
     description: 'AC tidak terasa dingin',
     date_created: new Date(),
     date_modified: new Date(),
+    orders: [],
   },
   {
     id: 2,
@@ -14,6 +15,7 @@ export const problemTypesSeeds: ProblemType[] = [
     description: 'AC netes di dalam ruangan',
     date_created: new Date(),
     date_modified: new Date(),
+    orders: [],
   },
   {
     id: 3,
@@ -21,6 +23,7 @@ export const problemTypesSeeds: ProblemType[] = [
     description: 'Bongkar AC',
     date_created: new Date(),
     date_modified: new Date(),
+    orders: [],
   },
   {
     id: 4,
@@ -28,6 +31,7 @@ export const problemTypesSeeds: ProblemType[] = [
     description: 'Pasang AC',
     date_created: new Date(),
     date_modified: new Date(),
+    orders: [],
   },
   {
     id: 5,
@@ -35,6 +39,7 @@ export const problemTypesSeeds: ProblemType[] = [
     description: 'Bongkar dan pasang AC',
     date_created: new Date(),
     date_modified: new Date(),
+    orders: [],
   },
   {
     id: 6,
@@ -42,6 +47,7 @@ export const problemTypesSeeds: ProblemType[] = [
     description: 'Servis rutin',
     date_created: new Date(),
     date_modified: new Date(),
+    orders: [],
   },
   {
     id: 7,
@@ -49,5 +55,6 @@ export const problemTypesSeeds: ProblemType[] = [
     description: 'AC tidak berfungsi / terdapat indikator tak wajar pada AC',
     date_created: new Date(),
     date_modified: new Date(),
+    orders: [],
   },
 ];
