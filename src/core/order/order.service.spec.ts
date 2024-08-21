@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateOrderRequest, OrderResponse } from '../models/order.model';
 import { Order, OrderStatus } from './entities/order.entity';
 import { OrderService } from './order.service';
+import { HttpException } from '@nestjs/common';
 
 describe('OrderService', () => {
   let service: OrderService;
@@ -165,11 +166,94 @@ describe('OrderService', () => {
       dateCreated: orderMock.date_created,
       dateModified: orderMock.date_modified,
     };
+    jest.spyOn(service, 'getOneByCustomerId').mockResolvedValue(null);
     jest.spyOn(orderRepository, 'create').mockReturnValue(orderMock);
     jest.spyOn(orderRepository, 'save').mockResolvedValue(orderMock);
     jest.spyOn(service, 'getOneById').mockResolvedValue(orderMock); // Updated to mock the correct response
 
     const result = await service.create(customerId, requestBody);
     expect(result).toEqual(createdOrderMock);
+  });
+
+  it('Should throw exception if customer create new order but customer still have order that not yet completed', async () => {
+    const customerId = '0191406f-093f-7224-84ad-3e0cecb415bd';
+    const requestBody: CreateOrderRequest = {
+      customerLatitude: 0.12345,
+      customerLongitude: 0.12345,
+      detailLocation: 'string',
+      problemTypeId: 1,
+      acTypeId: 1,
+      numberOfUnits: 1,
+      buildingTypeId: 1,
+      buildingFloorLocation: 'string',
+      dateService: new Date('2024-01-01'),
+    };
+
+    // const orderMock: Order = {
+    //   id: 'string',
+    //   customer: {
+    //     id: customerId,
+    //     name: 'string',
+    //     contact: {
+    //       id: 'string',
+    //       phone: 'string',
+    //       email: 'string',
+    //       date_created: new Date(),
+    //       date_modified: new Date(),
+    //     },
+    //     password: 'string',
+    //     orders: [],
+    //     date_created: new Date(),
+    //     date_modified: new Date(),
+    //   },
+    //   technician: null,
+    //   location: {
+    //     latitude: 0.12345,
+    //     longitude: 0.12345,
+    //     detail: 'string',
+    //   },
+    //   problemType: {
+    //     id: 1,
+    //     name: 'string',
+    //     description: 'string',
+    //     date_created: new Date(),
+    //     date_modified: new Date(),
+    //     orders: [],
+    //   },
+    //   acType: {
+    //     id: 1,
+    //     name: 'string',
+    //     description: 'string',
+    //     date_created: new Date(),
+    //     date_modified: new Date(),
+    //     orders: [],
+    //   },
+    //   numberOfUnits: 1,
+    //   buildingType: {
+    //     id: 1,
+    //     name: 'string',
+    //     floorLocation: '1',
+    //     date_created: new Date(),
+    //     date_modified: new Date(),
+    //     orders: [],
+    //   },
+    //   dateService: new Date('2024-01-01'),
+    //   status: OrderStatus.PENDING,
+    //   totalPrice: null,
+    //   dateCreated: orderMock.date_created,
+    //   dateModified: orderMock.date_modified,
+    // };
+
+    jest.spyOn(service, 'getOneByCustomerId').mockResolvedValue(orderMock);
+    jest.spyOn(orderRepository, 'create').mockReturnValue(orderMock);
+    jest.spyOn(orderRepository, 'save').mockResolvedValue(orderMock);
+    // jest.spyOn(orderRepository, 'find').mockResolvedValue([orderMock]);
+
+    await expect(service.create(customerId, requestBody)).rejects.toThrow(
+      new HttpException(
+        { errors: 'Customer still have order that not yet completed' },
+        400,
+      ),
+    );
   });
 });

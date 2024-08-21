@@ -5,7 +5,7 @@ import {
   toOrderResponse,
 } from '../models/order.model';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Order } from './entities/order.entity';
+import { Order, OrderStatus } from './entities/order.entity';
 import { Repository } from 'typeorm';
 
 /**
@@ -47,6 +47,16 @@ export class OrderService {
   ): Promise<OrderResponse> {
     this.logger.debug(`OrderService.create(${JSON.stringify(requestBody)})`);
     try {
+      // throw exception if customer still have order that not yet completed
+      const order = await this.getOneByCustomerId(customerId);
+      if (order && order.status !== OrderStatus.COMPLETED) {
+        this.logger.warn(`Customer still have order that not yet completed`);
+        throw new HttpException(
+          { errors: 'Customer still have order that not yet completed' },
+          400,
+        );
+      }
+
       const createdOrder: Order = this.orderRepository.create({
         id: undefined,
         customer: {
@@ -81,9 +91,10 @@ export class OrderService {
       return toOrderResponse(result);
     } catch (error) {
       this.logger.error(
-        `OrderService.create(${JSON.stringify(requestBody)}): ${error.message}`,
+        `OrderService.create(${JSON.stringify(requestBody)}): ${error.response?.errors}`,
       );
-      throw new HttpException({ errors: error.message }, 500);
+      this.logger.error(`Error details: ${error}`);
+      throw new HttpException({ errors: error.response?.errors }, error.status);
     }
   }
 
@@ -101,6 +112,25 @@ export class OrderService {
       relations: {
         customer: true,
         technician: true,
+        ac_type: true,
+        problem_type: true,
+        building_type: true,
+      },
+    });
+    if (!order) return null;
+    return order;
+  }
+
+  async getOneByCustomerId(customerId: string): Promise<Order | null> {
+    this.logger.debug(`OrderService.getOneByIdCustomer(${customerId})`);
+    const order = await this.orderRepository.findOne({
+      where: {
+        customer: {
+          id: customerId,
+        },
+      },
+      relations: {
+        customer: true,
         ac_type: true,
         problem_type: true,
         building_type: true,
