@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateOrderRequest, toOrderResponse } from '../models/order.model';
+import { CreateOrderRequest, OrderResponse } from '../models/order.model';
 import { Order, OrderStatus } from './entities/order.entity';
 import { OrderService } from './order.service';
 
@@ -10,9 +10,80 @@ describe('OrderService', () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let orderRepository: Repository<Order>;
 
+  const orderMock: Order = {
+    id: 'string',
+    customer: {
+      id: 'string',
+      name: 'string',
+      contact: {
+        id: 'string',
+        phone: 'string',
+        email: 'string',
+        date_created: new Date(), // Add this line
+        date_modified: new Date(),
+      },
+      password: 'string',
+      orders: [],
+      date_created: new Date(), // Add this line
+      date_modified: new Date(),
+    },
+    technician: {
+      id: 'string',
+      name: 'string',
+      date_of_birth: new Date(), // Add this line
+      contact: {
+        id: 'string',
+        phone: 'string',
+        email: 'string',
+        date_created: new Date(), // Add this line
+        date_modified: new Date(),
+      },
+      password: 'string',
+      orders: [],
+      image_key: 'string',
+      image_url: 'string',
+      license_plate: 'string',
+      is_available: true,
+      date_created: new Date(),
+      date_modified: new Date(),
+    },
+    customer_latitude: 0.12345,
+    customer_longitude: 0.12345,
+    detail_location: 'string',
+    problem_type: {
+      id: 1,
+      name: 'string',
+      description: 'string',
+      date_created: new Date(),
+      date_modified: new Date(),
+      orders: [],
+    },
+    ac_type: {
+      id: 1,
+      name: 'string',
+      description: 'string',
+      date_created: new Date(),
+      date_modified: new Date(),
+      orders: [],
+    },
+    number_of_units: 1,
+    building_type: {
+      id: 1,
+      name: 'string',
+      date_created: new Date(),
+      date_modified: new Date(),
+      orders: [],
+    },
+    building_floor_location: '1',
+    date_service: new Date('2024-01-01'),
+    status: OrderStatus.PENDING,
+    total_price: null,
+    date_created: new Date(),
+    date_modified: new Date(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      // imports: [...TypeOrmTestingModule()],
       providers: [
         OrderService,
         {
@@ -40,94 +111,65 @@ describe('OrderService', () => {
 
   it('Should create a new order successfully', async () => {
     const requestBody: CreateOrderRequest = {
-      customerLatitude: 0.2134,
-      customerLongitude: 0.1234,
-      detailLocation: 'Jl. Anggur, Gg. Beo No. 11',
+      customerLatitude: 0.12345,
+      customerLongitude: 0.12345,
+      detailLocation: 'string',
       problemTypeId: 1,
       acTypeId: 1,
-      numberOfUnits: 2,
+      numberOfUnits: 1,
       buildingTypeId: 1,
-      buildingFloorLocation: '1',
-      dateService: new Date('2022-01-01'),
+      buildingFloorLocation: 'string',
+      dateService: new Date('2024-01-01'),
     };
     const customerId = '0191406f-093f-7224-84ad-3e0cecb415bd';
 
-    const createdOrder: Order = {
-      id: '0191406f-093f-7224-84ad-3e0cecb415bd',
+    const createdOrderMock: OrderResponse = {
+      id: 'string',
       customer: {
-        id: customerId,
-        name: 'Joko Pirang',
-        contact: {
-          id: '0191406f-093f-7224-84ad-3e0cecb415bd',
-          phone: '08123456789',
-          email: 'qkX2e@example.com',
-          date_created: new Date(), // Add this line
-          date_modified: new Date(),
-        },
-        password: 'hashed123',
-        orders: [],
-        date_created: new Date(), // Add this line
-        date_modified: new Date(),
+        id: 'string',
+        name: 'string',
+        phone: 'string',
       },
       technician: {
-        id: '0191406f-093f-7224-84ad-3e0cecb415bd',
-        name: 'Joko Pirang',
-        date_of_birth: new Date(), // Add this line
-        contact: {
-          id: '0191406f-093f-7224-84ad-3e0cecb415bd',
-          phone: '08123456789',
-          email: 'qkX2e@example.com',
-          date_created: new Date(), // Add this line
-          date_modified: new Date(),
-        },
-        password: 'hashed123',
-        orders: [],
-        image_key: '', // Add this line
-        image_url: '', // Add this line
-        license_plate: '', // Add this line
-        is_available: true, // Add this line
-        date_created: new Date(), // Add this line
-        date_modified: new Date(),
+        id: 'string',
+        name: 'string',
+        phone: 'string',
+        imageUrl: 'string',
+        licensePlate: 'string',
+        isAvailable: true,
       },
-      customer_latitude: requestBody.customerLatitude,
-      customer_longitude: requestBody.customerLongitude,
-      detail_location: requestBody.detailLocation,
-      problem_type: {
-        id: requestBody.problemTypeId,
-        name: 'AC Tidak Dingin',
-        description: 'AC tidak terasa dingin',
-        date_created: new Date(),
-        date_modified: new Date(),
-        orders: [],
+      location: {
+        latitude: 0.12345,
+        longitude: 0.12345,
+        detail: 'string',
       },
-      ac_type: {
-        id: requestBody.acTypeId,
-        name: 'AC Split',
-        description: 'AC yang nempel di dinding',
-        date_created: new Date(),
-        date_modified: new Date(),
-        orders: [],
+      problemType: {
+        id: 1,
+        name: 'string',
+        description: 'string',
       },
-      number_of_units: requestBody.numberOfUnits,
-      building_type: {
-        id: requestBody.buildingTypeId,
-        name: 'Rumah',
-        date_created: new Date(),
-        date_modified: new Date(),
-        orders: [],
+      acType: {
+        id: 1,
+        name: 'string',
+        description: 'string',
       },
-      building_floor_location: requestBody.buildingFloorLocation,
-      date_service: requestBody.dateService,
-      status: OrderStatus.PENDING, // Add this line
-      total_price: null, // Add this line
-      date_created: new Date(), // Add this line
-      date_modified: new Date(), // Add this line
+      numberOfUnits: 1,
+      buildingType: {
+        id: 1,
+        name: 'string',
+        floorLocation: '1',
+      },
+      dateService: new Date('2024-01-01'),
+      status: OrderStatus.PENDING,
+      totalPrice: null,
+      dateCreated: orderMock.date_created,
+      dateModified: orderMock.date_modified,
     };
-    jest.spyOn(orderRepository, 'create').mockReturnValue(createdOrder);
-    jest.spyOn(orderRepository, 'save').mockResolvedValue(createdOrder);
-    jest.spyOn(service, 'getOneById').mockResolvedValue(createdOrder); // Updated to mock the correct response
+    jest.spyOn(orderRepository, 'create').mockReturnValue(orderMock);
+    jest.spyOn(orderRepository, 'save').mockResolvedValue(orderMock);
+    jest.spyOn(service, 'getOneById').mockResolvedValue(orderMock); // Updated to mock the correct response
 
     const result = await service.create(customerId, requestBody);
-    expect(result).toEqual(toOrderResponse(createdOrder));
+    expect(result).toEqual(createdOrderMock);
   });
 });
