@@ -14,6 +14,7 @@ import { JwtGuard } from '../auth/guards/jwt.guard';
 import { NotificationService } from './notification.service';
 
 @Controller('notifications')
+@UseGuards(JwtGuard)
 export class NotificationController {
   private readonly logger: Logger = new Logger(NotificationController.name);
   constructor(private readonly notificationService: NotificationService) {}
@@ -25,7 +26,6 @@ export class NotificationController {
    * @returns An object containing a success message and the list of notifications.
    */
   @Get()
-  @UseGuards(JwtGuard)
   async findAll(@Request() request: RequestWithUser) {
     this.logger.debug(`NotificationController.findAll(${request.user.sub})`);
     const notifications = await this.notificationService.findAll(
@@ -47,7 +47,6 @@ export class NotificationController {
    * @returns An object containing the message "Notification found" and the notification data.
    */
   @Get(':id')
-  @UseGuards(JwtGuard)
   async findOne(@Param('id') id: string) {
     this.logger.debug(`NotificationController.findOne(${id})`);
 
@@ -61,7 +60,6 @@ export class NotificationController {
   }
 
   @Sse('sse')
-  @UseGuards(JwtGuard)
   /**
    * Server-Sent Events (SSE) endpoint for receiving real-time notifications.
    *
@@ -81,7 +79,6 @@ export class NotificationController {
    * @returns An object containing the message "Notification marked as read".
    */
   @Patch(':id/read')
-  @UseGuards(JwtGuard)
   async markAsRead(@Param('id') id: string) {
     this.logger.debug(`NotificationController.markAsRead(${id})`);
 
