@@ -1,5 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
+import { filter, fromEvent, map, Observable } from 'rxjs';
 import { Repository } from 'typeorm';
 import {
   CreateNotificationRequest,
@@ -8,8 +10,6 @@ import {
   toNotificationResponse,
 } from '../models/notification.model';
 import { Notification } from './entities/notification.entity';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { filter, fromEvent, map, Observable } from 'rxjs';
 
 /**
  * NotificationService class handles the management of notifications.
@@ -102,6 +102,10 @@ export class NotificationService {
     this.logger.debug(`NotificationService.findAll(${userId})`);
     const notifications = await this.notificationRepository.find({
       where: [{ customer: { id: userId } }, { technician: { id: userId } }],
+      relations: {
+        customer: true,
+        technician: true,
+      },
     });
 
     const response = notifications.map((notification) =>
@@ -122,6 +126,10 @@ export class NotificationService {
     try {
       const notification = await this.notificationRepository.findOne({
         where: { id },
+        relations: {
+          customer: true,
+          technician: true,
+        },
       });
       if (!notification) {
         throw new HttpException({ errors: 'Notification not found' }, 404);
