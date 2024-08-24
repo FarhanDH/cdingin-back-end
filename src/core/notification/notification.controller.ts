@@ -14,7 +14,6 @@ import { JwtGuard } from '../auth/guards/jwt.guard';
 import { NotificationService } from './notification.service';
 
 @Controller('notifications')
-@UseGuards(JwtGuard)
 export class NotificationController {
   private readonly logger: Logger = new Logger(NotificationController.name);
   constructor(private readonly notificationService: NotificationService) {}
@@ -26,6 +25,7 @@ export class NotificationController {
    * @returns An object containing a success message and the list of notifications.
    */
   @Get()
+  @UseGuards(JwtGuard)
   async findAll(@Request() request: RequestWithUser) {
     this.logger.debug(`NotificationController.findAll(${request.user.sub})`);
     const notifications = await this.notificationService.findAll(
@@ -47,10 +47,20 @@ export class NotificationController {
    * @returns An object containing the message "Notification found" and the notification data.
    */
   @Get(':id')
+  @UseGuards(JwtGuard)
   async findOne(@Param('id') id: string) {
     this.logger.debug(`NotificationController.findOne(${id})`);
 
-    const notification = await this.notificationService.findOne(+id);
+    const notificationId = parseInt(id, 10);
+    if (isNaN(notificationId)) {
+      this.logger.warn(`NotificationController.findOne(${id}): Invalid ID`);
+      return {
+        message: 'Invalid notification ID',
+        error: 'The provided ID is not a valid number',
+      };
+    }
+
+    const notification = await this.notificationService.findOne(notificationId);
     this.logger.log(`NotificationController.findOne(${id}): success`);
 
     return {
@@ -59,13 +69,14 @@ export class NotificationController {
     };
   }
 
-  @Sse('sse')
   /**
    * Server-Sent Events (SSE) endpoint for receiving real-time notifications.
    *
    * @param request - The request object containing user information.
    * @returns A promise that resolves to an Observable of MessageEvent.
    */
+  @Sse('sse/stream')
+  @UseGuards(JwtGuard)
   async sse(
     @Request() request: RequestWithUser,
   ): Promise<Observable<MessageEvent>> {
@@ -79,6 +90,7 @@ export class NotificationController {
    * @returns An object containing the message "Notification marked as read".
    */
   @Patch(':id/read')
+  @UseGuards(JwtGuard)
   async markAsRead(@Param('id') id: string) {
     this.logger.debug(`NotificationController.markAsRead(${id})`);
 
