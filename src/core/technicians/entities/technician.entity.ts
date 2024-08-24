@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Contact } from '~/core/contact/entities/contact.entity';
 import { Order } from '~/core/order/entities/order.entity';
+import { Notification } from '~/core/notification/entities/notification.entity'; // Pastikan path ini sesuai dengan lokasi entity Notification
 
 @Entity('technicians')
 export class Technician {
@@ -25,7 +26,7 @@ export class Technician {
   @OneToOne(() => Contact, {
     cascade: true,
     eager: true,
-    onDelete: 'CASCADE', // Ensures that the contact is deleted when the technician is deleted
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'contact_id' })
   contact: Contact;
@@ -47,6 +48,9 @@ export class Technician {
 
   @OneToMany(() => Order, (order) => order.technician)
   orders: Relation<Order>[];
+
+  @OneToMany(() => Notification, (notification) => notification.technician)
+  notifications: Relation<Notification>[];
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   date_created: Date;
