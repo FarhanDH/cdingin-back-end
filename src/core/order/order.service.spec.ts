@@ -296,6 +296,7 @@ describe('OrderService', () => {
 
       const takenOrderMock = {
         ...orderMock,
+        // technician: null,
         status: OrderStatus.TAKEN,
       };
 
@@ -313,7 +314,15 @@ describe('OrderService', () => {
           date_service: new Date('2024-01-01'),
         },
       ]);
-      jest.spyOn(orderRepository, 'save').mockResolvedValue(takenOrderMock);
+      jest
+        .spyOn(orderRepository, 'save')
+        .mockResolvedValue({ ...orderMock, status: OrderStatus.TAKEN });
+      jest
+        .spyOn(service, 'getOneById')
+        .mockResolvedValue({ ...orderMock, status: OrderStatus.TAKEN });
+      jest
+        .spyOn(service, 'take')
+        .mockResolvedValue(toOrderResponse(takenOrderMock));
       const result = await service.take('string', user);
       expect(result).toEqual(toOrderResponse(takenOrderMock));
     });

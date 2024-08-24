@@ -108,7 +108,7 @@ export class OrderService {
    * @throws HttpException if the order is not found.
    * @throws HttpException if the order is already taken.
    */
-  async take(orderId: string, user: JwtPayload) {
+  async take(orderId: string, user: JwtPayload): Promise<OrderResponse> {
     this.logger.debug(`OrderService.take(${orderId})`);
 
     // Validate that the user is a technician
