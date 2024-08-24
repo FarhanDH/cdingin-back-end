@@ -37,21 +37,23 @@ export const toNotificationResponse = (
     body: notification.body,
     is_read: notification.is_read,
     date_created: notification.date_created,
-    technician: notification.technician
-      ? {
-          id: notification.technician.id,
-          name: notification.technician.name,
-          phone: notification.technician.contact.phone,
-          imageUrl: notification.technician.image_url,
-        }
-      : null,
-    customer: notification.customer
-      ? {
-          id: notification.customer.id,
-          name: notification.customer.name,
-          phone: notification.customer.contact.phone,
-        }
-      : null,
+    technician:
+      notification.technician && notification.technician.contact
+        ? {
+            id: notification.technician.id,
+            name: notification.technician.name,
+            phone: notification.technician.contact.phone,
+            imageUrl: notification.technician.image_url,
+          }
+        : null,
+    customer:
+      notification.customer && notification.customer.contact
+        ? {
+            id: notification.customer.id,
+            name: notification.customer.name,
+            phone: notification.customer.contact.phone,
+          }
+        : null,
   };
 };
 
