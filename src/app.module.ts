@@ -14,7 +14,8 @@ import { ResponseInterceptor } from './common/response.interceptor';
 import { AcTypeModule } from './core/ac-type/ac-type.module';
 import { BuildingTypeModule } from './core/building-type/building-type.module';
 import { OrderModule } from './core/order/order.module';
-
+import { NotificationModule } from './core/notification/notification.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 @Module({
   providers: [
     {
@@ -41,6 +42,10 @@ import { OrderModule } from './core/order/order.module';
     AcTypeModule,
     BuildingTypeModule,
     OrderModule,
+    NotificationModule,
+    EventEmitterModule.forRoot({
+      global: true,
+    }),
   ],
   controllers: [AppController],
 })
