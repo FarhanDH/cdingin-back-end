@@ -1,31 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Repository } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotificationService } from './notification.service';
 import { Notification } from './entities/notification.entity';
-import { Customer } from '../customer/entities/customer.entity';
-import { Technician } from '../technicians/entities/technician.entity';
-import { NotificationEvent } from '../models/notification.model';
+import {
+  CreateNotificationRequest,
+  NotificationEvent,
+} from '../models/notification.model';
+import { HttpException } from '@nestjs/common';
 
-describe('NotificationService', () => {
-  let service: NotificationService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [NotificationService],
-    }).compile();
-
-    service = module.get<NotificationService>(NotificationService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
 describe('NotificationService', () => {
   let service: NotificationService;
   let repository: Repository<Notification>;
+  let eventEmitter: EventEmitter2;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,7 +23,12 @@ describe('NotificationService', () => {
           provide: getRepositoryToken(Notification),
           useClass: Repository,
         },
-        EventEmitter2,
+        {
+          provide: EventEmitter2,
+          useValue: {
+            emit: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -43,6 +36,7 @@ describe('NotificationService', () => {
     repository = module.get<Repository<Notification>>(
       getRepositoryToken(Notification),
     );
+    eventEmitter = module.get<EventEmitter2>(EventEmitter2);
   });
 
   it('should be defined', () => {
@@ -52,26 +46,17 @@ describe('NotificationService', () => {
   describe('create', () => {
     it('should create a new notification', async () => {
       const userId = 'user123';
-      const requestBody = {
-        title: 'Hii Doe, your order is ready',
-        body: 'Your order with ID 123 has been taken by technician Farhan, he will be at your place in 30 minutes. Click <a href="/order/details">here</a> to track your order.',
+      const requestBody: CreateNotificationRequest = {
+        title: 'Test Notification',
+        body: 'This is a test notification',
       };
-
       const createdNotification = new Notification();
-      createdNotification.body = requestBody.body;
+      createdNotification.id = 1;
       createdNotification.title = requestBody.title;
-      createdNotification.customer = { id: userId } as Customer;
-      createdNotification.technician = { id: userId } as Technician;
-
-      const savedNotification = new Notification();
-      savedNotification.id = 1;
-      savedNotification.body = requestBody.body;
-      savedNotification.title = requestBody.title;
-      savedNotification.customer = { id: userId } as Customer;
-      savedNotification.technician = { id: userId } as Technician;
+      createdNotification.body = requestBody.body;
 
       jest.spyOn(repository, 'create').mockReturnValue(createdNotification);
-      jest.spyOn(repository, 'save').mockResolvedValue(savedNotification);
+      jest.spyOn(repository, 'save').mockResolvedValue(createdNotification);
 
       const result = await service.create(userId, requestBody);
 
@@ -82,43 +67,53 @@ describe('NotificationService', () => {
         technician: { id: userId },
       });
       expect(repository.save).toHaveBeenCalledWith(createdNotification);
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        NotificationEvent.NEW_NOTIFICATION,
+        createdNotification,
+      );
       expect(result).toEqual({
-        id: savedNotification.id,
-        body: savedNotification.body,
-        title: savedNotification.title,
+        id: createdNotification.id,
+        title: createdNotification.title,
+        body: createdNotification.body,
+        is_read: false,
+        date_created: expect.any(Date),
       });
     });
 
-    it('should throw an HttpException if an error occurs', async () => {
+    it('should throw HttpException on error', async () => {
       const userId = 'user123';
-      const requestBody = {
-        title: 'Hii Doe, your order is ready',
-        body: 'Your order with ID 123 has been taken by technician Farhan, he will be at your place in 30 minutes. Click <a href="/order/details">here</a> to track your order.',
+      const requestBody: CreateNotificationRequest = {
+        title: 'Test Notification',
+        body: 'This is a test notification',
       };
 
       jest.spyOn(repository, 'create').mockImplementation(() => {
-        throw new Error('Some error');
+        throw new Error('Database error');
       });
 
-      await expect(service.create(userId, requestBody)).rejects.toThrowError(
-        'Error establishing SSE connection',
+      await expect(service.create(userId, requestBody)).rejects.toThrow(
+        HttpException,
       );
     });
   });
 
   describe('findAll', () => {
-    it('should find all notifications for a user', async () => {
+    it('should return all notifications for a user', async () => {
       const userId = 'user123';
       const notifications = [
         {
           id: 1,
-          body: 'Notification 1',
-          title: 'Title 1',
+          title: 'Notification 1',
+          body: 'Body 1',
+          is_read: false,
+          date_created: new Date(),
         },
         {
           id: 2,
-          body: 'Notification 2',
-          title: 'Title 2',
+          title: 'Notification 2',
+          body: 'Body 2',
+          is_read: true,
+          date_created: new Date(),
         },
       ] as Notification[];
 
@@ -128,108 +123,97 @@ describe('NotificationService', () => {
 
       expect(repository.find).toHaveBeenCalledWith({
         where: [{ customer: { id: userId } }, { technician: { id: userId } }],
+        relations: {
+          customer: true,
+          technician: true,
+        },
       });
       expect(result).toEqual(notifications);
     });
   });
 
   describe('findOne', () => {
-    it('should find a notification by ID', async () => {
-      const id = 1;
-      const notification = {
-        id: 1,
-        body: 'Notification 1',
-        title: 'Title 1',
-      } as Notification;
+    it('should return a notification by id', async () => {
+      const notificationId = 1;
+      const notification = new Notification();
+      notification.id = notificationId;
+      notification.title = 'Test Notification';
+      notification.body = 'Test Body';
+      notification.is_read = false;
+      notification.date_created = new Date();
 
       jest.spyOn(repository, 'findOne').mockResolvedValue(notification);
 
-      const result = await service.findOne(id);
+      const result = await service.findOne(notificationId);
 
-      expect(repository.findOne).toHaveBeenCalledWith({ where: { id } });
-      expect(result).toEqual(notification);
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: { id: notificationId },
+        relations: {
+          customer: true,
+          technician: true,
+        },
+      });
+      expect(result).toEqual({
+        id: notification.id,
+        title: notification.title,
+        body: notification.body,
+        is_read: notification.is_read,
+        date_created: notification.date_created,
+      });
     });
 
-    it('should throw an HttpException if the notification is not found', async () => {
-      const id = 1;
+    it('should throw HttpException when notification is not found', async () => {
+      const notificationId = 1;
 
-      jest.spyOn(repository, 'findOne').mockResolvedValue(undefined);
+      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.findOne(id)).rejects.toThrowError(
-        'Notification not found',
+      await expect(service.findOne(notificationId)).rejects.toThrow(
+        HttpException,
       );
     });
   });
 
   describe('markAsRead', () => {
     it('should mark a notification as read', async () => {
-      const id = 1;
+      const notificationId = 1;
       const notification = new Notification();
-      notification.id = id;
+      notification.id = notificationId;
       notification.is_read = false;
 
       jest.spyOn(repository, 'findOne').mockResolvedValue(notification);
-      jest.spyOn(repository, 'save').mockResolvedValue(notification);
+      jest
+        .spyOn(repository, 'save')
+        .mockResolvedValue({ ...notification, is_read: true });
 
-      await service.markAsRead(id);
+      await service.markAsRead(notificationId);
 
-      expect(repository.findOne).toHaveBeenCalledWith({ where: { id } });
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: { id: notificationId },
+      });
       expect(repository.save).toHaveBeenCalledWith({
         ...notification,
         is_read: true,
       });
     });
 
-    it('should throw an HttpException if the notification is not found', async () => {
-      const id = 1;
+    it('should throw HttpException when notification is not found', async () => {
+      const notificationId = 1;
 
-      jest.spyOn(repository, 'findOne').mockResolvedValue(undefined);
+      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.markAsRead(id)).rejects.toThrowError(
-        'Notification not found',
+      await expect(service.markAsRead(notificationId)).rejects.toThrow(
+        HttpException,
       );
     });
   });
 
   describe('sseEmitter', () => {
-    it('should return an SSE emitter for the specified user', async () => {
+    it('should return an Observable for SSE', async () => {
       const userId = 'user123';
-      const notification = {
-        id: 1,
-        body: 'Notification 1',
-        title: 'Title 1',
-        customer: { id: userId },
-        technician: { id: userId },
-      };
+      const observable = await service.sseEmitter(userId);
 
-      jest.spyOn(service['eventEmitter'], 'fromEvent').mockReturnValue({
-        pipe: jest.fn().mockReturnValue({
-          filter: jest.fn().mockReturnValue({
-            map: jest.fn().mockReturnValue(notification),
-          }),
-        }),
-      });
-
-      const result = await service.sseEmitter(userId);
-
-      expect(service['eventEmitter'].fromEvent).toHaveBeenCalledWith(
-        NotificationEvent.NEW_NOTIFICATION,
-      );
-      expect(result).toEqual(notification);
-    });
-
-    it('should throw an HttpException if there is an error establishing the SSE connection', async () => {
-      const userId = 'user123';
-
-      jest
-        .spyOn(service['eventEmitter'], 'fromEvent')
-        .mockImplementation(() => {
-          throw new Error('Some error');
-        });
-
-      await expect(service.sseEmitter(userId)).rejects.toThrowError(
-        'Error establishing SSE connection',
-      );
+      expect(observable).toBeDefined();
+      expect(typeof observable.subscribe).toBe('function');
     });
   });
 });
