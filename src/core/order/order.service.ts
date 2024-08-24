@@ -191,8 +191,15 @@ export class OrderService {
         id: user.sub, // Set the technician of the order to the current user
       },
     });
+    const result: Order | null = await this.getOneById(updatedOrder.id);
+    if (!result) {
+      this.logger.warn(
+        `OrderService.take(${orderId}): Order Not Found, after update`,
+      );
+      throw new HttpException({ errors: 'Order Not Found' }, 404);
+    }
     this.logger.log(`OrderService.take(${orderId}): success`);
-    return toOrderResponse(updatedOrder);
+    return toOrderResponse(result);
   }
 
   /**

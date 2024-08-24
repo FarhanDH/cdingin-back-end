@@ -54,7 +54,7 @@ export class OrderController {
     const order = await this.orderService.take(orderId, request.user);
     this.logger.log(`OrderController.take(${orderId}): success`);
     return {
-      message: 'Order taken successfully',
+      message: ` Order successfully taken by ${order.technician?.name}`,
       data: order,
     };
   }
