@@ -10,6 +10,7 @@ import {
   toNotificationResponse,
 } from '../models/notification.model';
 import { Notification } from './entities/notification.entity';
+import { Role } from '~/common/utils';
 
 /**
  * NotificationService class handles the management of notifications.
@@ -39,57 +40,71 @@ export class NotificationService {
   }
 
   /**
-   * Create a new notification.
-   * @param userId - The ID of the user.
+   * Create new notifications for one or more recipients.
+   * @param recipients - A single recipient ID or an array of recipient IDs.
    * @param requestBody - The request body containing notification details.
+   * @param userType - The role of the recipients (Customer or Technician).
    * @example
+   * const recipients = ['user1', 'user2'];
    * const requestBody: CreateNotificationRequest = {
-   * title: 'Hii Doe, your order is ready',
-   * body: 'Your order with ID 123 has been taken by technician Farhan, he will be at your place in 30 minutes. Click <a href="/order/details">here</a> to track your order.',
+   *   title: 'Hi Doe, your order is ready',
+   *   body: 'Your order with ID 123 has been taken by technician Farhan. He will be at your place in 30 minutes. Click <a href="/order/details">here</a> to track your order.',
    * };
-   * @description This method used to create a new notification, you can use this method to notify the user about their order status, payment status, etc.
-   * @returns A promise that resolves to the created notification.
-   * @throws HttpException if an error occurs.
+   * const userType = Role.Customer;
+   * await notificationService.create(recipients, requestBody, userType);
+   * @description This method creates new notifications for the specified recipients. It can be used to notify users about their order status, payment status, etc.
+   * @returns A promise that resolves when the notifications have been created and saved.
+   * @throws HttpException if an error occurs during the creation process.
    */
   async create(
-    userId: string,
+    recipients: string | string[],
     requestBody: CreateNotificationRequest,
-    userType: 'customer' | 'technician',
-  ): Promise<NotificationResponse> {
+    userType: Role,
+  ): Promise<void> {
     this.logger.debug(
-      `NotificationService.create(\nuserId: ${userId}, \nuserType: ${userType}, \nrequestBody: ${JSON.stringify(
+      `NotificationService.create(\nrecipients: ${recipients}, \nuserType: ${userType}, \nrequestBody: ${JSON.stringify(
         requestBody,
       )}\n)`,
     );
     try {
-      const createdNotification: Notification =
-        this.notificationRepository.create({
-          body: requestBody.body,
-          title: requestBody.title,
-          is_read: false,
-          ...(userType === 'customer' ? { customer: { id: userId } } : {}),
-          ...(userType === 'technician' ? { technician: { id: userId } } : {}),
-        });
+      recipients = Array.isArray(recipients) ? recipients : [recipients];
 
-      const savedNotification =
-        await this.notificationRepository.save(createdNotification);
+      const createdNotifications: Notification[] =
+        this.notificationRepository.create(
+          recipients.map((recipient) => ({
+            body: requestBody.body,
+            title: requestBody.title,
+            is_read: false,
+            [userType === Role.Customer ? 'customer' : 'technician']: {
+              id: recipient,
+            },
+          })),
+        );
 
-      // Emit an event for new notification
-      this.eventEmitter.emit(
-        NotificationEvent.NEW_NOTIFICATION,
-        savedNotification,
-      );
+      const savedNotifications =
+        await this.notificationRepository.save(createdNotifications);
+
+      savedNotifications.forEach((notification) => {
+        this.eventEmitter.emit(
+          NotificationEvent.NEW_NOTIFICATION,
+          notification,
+        );
+      });
 
       this.logger.log(
-        `NotificationService.create(${JSON.stringify(requestBody)}): success`,
+        `NotificationService.create: success for ${recipients.length} recipients`,
       );
-      return toNotificationResponse(savedNotification);
     } catch (error) {
-      this.logger.error(
-        `NotificationService.create(${JSON.stringify(requestBody)}): ${error.response?.errors}`,
+      this.logger.error(`NotificationService.create: ${error.message}`);
+      this.logger.error(`Error details: ${JSON.stringify(error)}`);
+      throw new HttpException(
+        {
+          errors:
+            error.response?.errors ||
+            'An error occurred while creating notifications',
+        },
+        error.status || 500,
       );
-      this.logger.error(`Error details: ${error}`);
-      throw new HttpException({ errors: error.response?.errors }, error.status);
     }
   }
 
