@@ -4,6 +4,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   ManyToOne,
+  Relation,
 } from 'typeorm';
 import { Customer } from '~/core/customer/entities/customer.entity';
 import { Technician } from '~/core/technicians/entities/technician.entity';
@@ -28,10 +29,10 @@ export class Notification {
   @ManyToOne(() => Customer, (customer) => customer.notifications, {
     nullable: true,
   })
-  customer: Customer;
+  customer: Relation<Customer>;
 
   @ManyToOne(() => Technician, (technician) => technician.notifications, {
     nullable: true,
   })
-  technician: Technician;
+  technician: Relation<Technician>;
 }
