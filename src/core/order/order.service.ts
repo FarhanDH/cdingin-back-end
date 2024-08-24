@@ -95,7 +95,11 @@ export class OrderService {
         body: `Your order with ID ${result.id} has been completed successfully.`,
       };
       // Push notification to customer
-      await this.notificationService.create(customerId, notificationRequest);
+      await this.notificationService.create(
+        customerId,
+        notificationRequest,
+        'customer',
+      );
 
       this.logger.log(
         `OrderService.create(${JSON.stringify(requestBody)}): success`,

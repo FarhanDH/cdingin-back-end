@@ -54,9 +54,10 @@ export class NotificationService {
   async create(
     userId: string,
     requestBody: CreateNotificationRequest,
+    userType: 'customer' | 'technician',
   ): Promise<NotificationResponse> {
     this.logger.debug(
-      `NotificationService.create(\nuserId: ${userId}, \nrequestBody: ${JSON.stringify(
+      `NotificationService.create(\nuserId: ${userId}, \nuserType: ${userType}, \nrequestBody: ${JSON.stringify(
         requestBody,
       )}\n)`,
     );
@@ -65,15 +66,15 @@ export class NotificationService {
         this.notificationRepository.create({
           body: requestBody.body,
           title: requestBody.title,
-          customer: { id: userId },
-          technician: { id: userId },
+          is_read: false,
+          ...(userType === 'customer' ? { customer: { id: userId } } : {}),
+          ...(userType === 'technician' ? { technician: { id: userId } } : {}),
         });
 
       const savedNotification =
         await this.notificationRepository.save(createdNotification);
 
       // Emit an event for new notification
-      // This event will be used to send a real-time notification to the user
       this.eventEmitter.emit(
         NotificationEvent.NEW_NOTIFICATION,
         savedNotification,
@@ -91,6 +92,46 @@ export class NotificationService {
       throw new HttpException({ errors: error.response?.errors }, error.status);
     }
   }
+  // async create(
+  //   userId: string,
+  //   requestBody: CreateNotificationRequest,
+  // ): Promise<NotificationResponse> {
+  //   this.logger.debug(
+  //     `NotificationService.create(\nuserId: ${userId}, \nrequestBody: ${JSON.stringify(
+  //       requestBody,
+  //     )}\n)`,
+  //   );
+  //   try {
+  //     const createdNotification: Notification =
+  //       this.notificationRepository.create({
+  //         body: requestBody.body,
+  //         title: requestBody.title,
+  //         customer: { id: userId },
+  //         technician: { id: userId },
+  //       });
+
+  //     const savedNotification =
+  //       await this.notificationRepository.save(createdNotification);
+
+  //     // Emit an event for new notification
+  //     // This event will be used to send a real-time notification to the user
+  //     this.eventEmitter.emit(
+  //       NotificationEvent.NEW_NOTIFICATION,
+  //       savedNotification,
+  //     );
+
+  //     this.logger.log(
+  //       `NotificationService.create(${JSON.stringify(requestBody)}): success`,
+  //     );
+  //     return toNotificationResponse(savedNotification);
+  //   } catch (error) {
+  //     this.logger.error(
+  //       `NotificationService.create(${JSON.stringify(requestBody)}): ${error.response?.errors}`,
+  //     );
+  //     this.logger.error(`Error details: ${error}`);
+  //     throw new HttpException({ errors: error.response?.errors }, error.status);
+  //   }
+  // }
 
   /**
    * Find all notifications for a user.
