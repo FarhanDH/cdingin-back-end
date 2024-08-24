@@ -9,6 +9,7 @@ import { Order, OrderStatus } from './entities/order.entity';
 import { Not, Repository } from 'typeorm';
 import { JwtPayload } from '../models/auth.model';
 import { Role } from '~/common/utils';
+import { NotificationService } from '../notification/notification.service';
 
 /**
  * OrderService is a service class that handles order related operations.
@@ -32,6 +33,7 @@ export class OrderService {
   constructor(
     @InjectRepository(Order)
     orderRepository: Repository<Order>,
+    private readonly notificationService: NotificationService,
   ) {
     this.orderRepository = orderRepository;
   }
@@ -86,6 +88,15 @@ export class OrderService {
       if (!result) {
         throw new HttpException({ errors: 'Order Not Found' }, 404);
       }
+
+      // Prepare notification request
+      const notificationRequest = {
+        title: 'Your order is complete',
+        body: `Your order with ID ${result.id} has been completed successfully.`,
+      };
+      // Push notification to customer
+      await this.notificationService.create(customerId, notificationRequest);
+
       this.logger.log(
         `OrderService.create(${JSON.stringify(requestBody)}): success`,
       );
