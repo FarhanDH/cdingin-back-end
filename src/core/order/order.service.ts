@@ -6,7 +6,9 @@ import {
 } from '../models/order.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
+import { JwtPayload } from '../models/auth.model';
+import { Role } from '~/common/utils';
 
 /**
  * OrderService is a service class that handles order related operations.
@@ -87,15 +89,110 @@ export class OrderService {
       this.logger.log(
         `OrderService.create(${JSON.stringify(requestBody)}): success`,
       );
-      console.log(result);
       return toOrderResponse(result);
     } catch (error) {
       this.logger.error(
         `OrderService.create(${JSON.stringify(requestBody)}): ${error.response?.errors}`,
       );
-      this.logger.error(`Error details: ${error}`);
       throw new HttpException({ errors: error.response?.errors }, error.status);
     }
+  }
+
+  /**
+   * Take an order by a technician.
+   *
+   * @param orderId The ID of the order to be taken.
+   * @param user The user taking the order.
+   * @returns A promise that resolves to the taken order by technician.
+   * @throws HttpException if the user is not authorized to take the order.
+   * @throws HttpException if the order is not found.
+   * @throws HttpException if the order is already taken.
+   */
+  async take(orderId: string, user: JwtPayload) {
+    this.logger.debug(`OrderService.take(${orderId})`);
+
+    // Validate that the user is a technician
+    if (user.role !== Role.Technician) {
+      this.logger.warn(
+        `OrderService.take(${orderId}): User not authorized to take order`,
+      );
+      throw new HttpException(
+        {
+          // The user is not authorized to take the order.
+          errors: 'User not authorized to take order',
+        },
+        // Unauthorized HTTP status code.
+        401,
+      );
+    }
+
+    // Retrieve the order by ID.
+    const order = await this.getOneById(orderId);
+    if (!order) {
+      this.logger.warn(`OrderService.take(${orderId}): Order not found`);
+      throw new HttpException(
+        {
+          // The order is not found.
+          errors: 'Order not found',
+        },
+        // Not found HTTP status code.
+        404,
+      );
+    }
+
+    // Check if the order is already taken.
+    if (order.technician) {
+      this.logger.warn(`OrderService.take(${orderId}): Order already taken`);
+      throw new HttpException(
+        {
+          // The order is already taken.
+          errors: 'Order already taken',
+        },
+        // Bad request HTTP status code.
+        400,
+      );
+    }
+
+    // Validate if that technician still have 3 orders that not yet completed with the same date service
+    const ordersByTechnicianWithSameDateServiceOfOrder =
+      await this.orderRepository.find({
+        where: {
+          // Get all orders that belong to the technician
+          technician: {
+            id: user.sub,
+          },
+
+          // And the status of the order is not completed
+          status: Not(OrderStatus.COMPLETED),
+
+          // And the date_service of the order is the same as the date_service of the order we are trying to take
+          date_service: order.date_service,
+        },
+      });
+    if (ordersByTechnicianWithSameDateServiceOfOrder.length >= 3) {
+      this.logger.warn(
+        `OrderService.take(${orderId}): Technician still have 3 orders that not yet completed with the same date service`,
+      );
+      throw new HttpException(
+        {
+          // The order is already taken.
+          errors:
+            'Technician still have 3 orders that not yet completed with the same date service',
+        },
+        // Bad request HTTP status code.
+        400,
+      );
+    }
+
+    const updatedOrder = await this.orderRepository.save({
+      ...order, // Spread the order object
+      status: OrderStatus.TAKEN, // Set the status of the order to TAKEN
+      technician: {
+        id: user.sub, // Set the technician of the order to the current user
+      },
+    });
+    this.logger.log(`OrderService.take(${orderId}): success`);
+    return toOrderResponse(updatedOrder);
   }
 
   /**
@@ -138,5 +235,24 @@ export class OrderService {
     });
     if (!order) return null;
     return order;
+  }
+
+  /**
+   * Retrieves all orders associated with a specific technician.
+   *
+   * @param {string} technicianId - The ID of the technician.
+   * @returns {Promise<Order[] | null>} A promise that resolves to an array of orders, or null if no orders are found.
+   */
+  async getAllByTechnicianId(technicianId: string): Promise<Order[] | null> {
+    this.logger.debug(`OrderService.getAllByTechnicianId(${technicianId})`);
+    const orders = await this.orderRepository.find({
+      where: {
+        technician: {
+          id: technicianId,
+        },
+      },
+    });
+    if (!orders) return null;
+    return orders;
   }
 }

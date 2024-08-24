@@ -32,7 +32,7 @@ export class Order {
   @ManyToOne(() => Technician, (technician) => technician.orders, {
     nullable: true,
   })
-  technician: Relation<Technician>;
+  technician: Relation<Technician> | null;
 
   @Column({ type: 'decimal', precision: 9, scale: 6 })
   customer_latitude: number;

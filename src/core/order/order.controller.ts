@@ -3,6 +3,8 @@ import {
   Controller,
   HttpException,
   Logger,
+  Param,
+  Patch,
   Post,
   Request,
   UseGuards,
@@ -36,6 +38,23 @@ export class OrderController {
     );
     return {
       message: 'Order created successfully',
+      data: order,
+    };
+  }
+
+  @UseGuards(JwtGuard)
+  @Patch(':id/take')
+  async take(
+    @Request() request: RequestWithUser,
+    @Param('id') orderId: string,
+  ): Promise<Response<OrderResponse>> {
+    this.logger.debug(
+      `OrderController.take(\nuser: ${JSON.stringify(request.user)}, \norderId: ${orderId}\n)`,
+    );
+    const order = await this.orderService.take(orderId, request.user);
+    this.logger.log(`OrderController.take(${orderId}): success`);
+    return {
+      message: 'Order taken successfully',
       data: order,
     };
   }

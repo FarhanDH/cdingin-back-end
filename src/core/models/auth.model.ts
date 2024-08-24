@@ -5,11 +5,12 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Role } from '~/common/utils';
 
 export class JwtPayload {
   sub: string;
   name: string;
-  role: string;
+  role: Role;
 }
 
 export class LoginRequest {
