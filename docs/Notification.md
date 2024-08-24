@@ -119,7 +119,7 @@
 
 ### 4. Server-Sent Events (SSE) for Notifications
 
-**URL**: `/api/notifications/sse`
+**URL**: `/api/notifications/sse/stream`
 
 **Method**: `GET`
 
