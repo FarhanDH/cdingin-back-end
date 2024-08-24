@@ -3,6 +3,7 @@ import {
   Get,
   Logger,
   Param,
+  Patch,
   Request,
   Sse,
   UseGuards,
@@ -71,5 +72,24 @@ export class NotificationController {
     @Request() request: RequestWithUser,
   ): Promise<Observable<MessageEvent>> {
     return this.notificationService.sseEmitter(request.user.sub);
+  }
+
+  /**
+   * Marks a notification as read.
+   *
+   * @param id - The ID of the notification.
+   * @returns An object containing the message "Notification marked as read".
+   */
+  @Patch(':id/read')
+  @UseGuards(JwtGuard)
+  async markAsRead(@Param('id') id: string) {
+    this.logger.debug(`NotificationController.markAsRead(${id})`);
+
+    await this.notificationService.markAsRead(+id);
+    this.logger.log(`NotificationController.markAsRead(${id}): success`);
+
+    return {
+      message: 'Notification marked as read',
+    };
   }
 }
