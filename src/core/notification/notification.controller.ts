@@ -69,7 +69,7 @@ export class NotificationController {
   async sse(
     @Request() request: RequestWithUser,
   ): Promise<Observable<MessageEvent>> {
-    return this.notificationService.sseEmitter(request.user.sub);
+    return this.notificationService.createNotificationStream(request.user.sub);
   }
 
   /**

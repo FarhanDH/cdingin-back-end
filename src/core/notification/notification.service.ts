@@ -179,7 +179,9 @@ export class NotificationService {
    * @returns A promise that resolves to an Observable of MessageEvent representing the SSE stream.
    * @throws {HttpException} If there is an error establishing the SSE connection.
    */
-  async sseEmitter(userId: string): Promise<Observable<MessageEvent>> {
+  async createNotificationStream(
+    userId: string,
+  ): Promise<Observable<MessageEvent>> {
     this.logger.debug(`NotificationService.sseEmitter(${userId})`);
     try {
       return fromEvent(
