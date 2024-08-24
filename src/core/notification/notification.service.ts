@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
   CreateNotificationRequest,
+  NotificationEvent,
   NotificationResponse,
   toNotificationResponse,
 } from '../models/notification.model';
@@ -73,7 +74,10 @@ export class NotificationService {
 
       // Emit an event for new notification
       // This event will be used to send a real-time notification to the user
-      this.eventEmitter.emit('new.notification', savedNotification);
+      this.eventEmitter.emit(
+        NotificationEvent.NEW_NOTIFICATION,
+        savedNotification,
+      );
 
       this.logger.log(
         `NotificationService.create(${JSON.stringify(requestBody)}): success`,
@@ -170,7 +174,10 @@ export class NotificationService {
   async sseEmitter(userId: string): Promise<Observable<MessageEvent>> {
     this.logger.debug(`NotificationService.sseEmitter(${userId})`);
     try {
-      return fromEvent(this.eventEmitter, 'new.notification').pipe(
+      return fromEvent(
+        this.eventEmitter,
+        NotificationEvent.NEW_NOTIFICATION,
+      ).pipe(
         filter(
           (data: Notification) =>
             (data.customer.id || data.technician.id) === userId,
@@ -179,7 +186,7 @@ export class NotificationService {
           const notificationResponse = toNotificationResponse(data);
           return {
             data: notificationResponse,
-            type: 'new.notification',
+            type: NotificationEvent.NEW_NOTIFICATION,
           } as MessageEvent;
         }),
       );

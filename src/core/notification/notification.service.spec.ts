@@ -6,6 +6,7 @@ import { NotificationService } from './notification.service';
 import { Notification } from './entities/notification.entity';
 import { Customer } from '../customer/entities/customer.entity';
 import { Technician } from '../technicians/entities/technician.entity';
+import { NotificationEvent } from '../models/notification.model';
 
 describe('NotificationService', () => {
   let service: NotificationService;
@@ -212,7 +213,7 @@ describe('NotificationService', () => {
       const result = await service.sseEmitter(userId);
 
       expect(service['eventEmitter'].fromEvent).toHaveBeenCalledWith(
-        'new.notification',
+        NotificationEvent.NEW_NOTIFICATION,
       );
       expect(result).toEqual(notification);
     });

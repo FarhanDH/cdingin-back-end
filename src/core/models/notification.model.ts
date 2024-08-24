@@ -54,3 +54,7 @@ export const toNotificationResponse = (
       : null,
   };
 };
+
+export enum NotificationEvent {
+  NEW_NOTIFICATION = 'new.notification',
+}
