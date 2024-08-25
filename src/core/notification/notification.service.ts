@@ -69,7 +69,7 @@ export class NotificationService {
     try {
       recipients = Array.isArray(recipients) ? recipients : [recipients];
 
-      const createdNotifications: Notification[] =
+      const newNotifications: Notification[] =
         this.notificationRepository.create(
           recipients.map((recipient) => ({
             body: requestBody.body,
@@ -82,7 +82,14 @@ export class NotificationService {
         );
 
       const savedNotifications =
-        await this.notificationRepository.save(createdNotifications);
+        await this.notificationRepository.save(newNotifications);
+
+      if (savedNotifications.length === 0) {
+        throw new HttpException(
+          { errors: 'Failed to create notifications' },
+          500,
+        );
+      }
 
       savedNotifications.forEach((notification) => {
         this.eventEmitter.emit(
