@@ -9,21 +9,15 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { OrderService } from './order.service';
-import { CreateOrderRequest, OrderResponse } from '../models/order.model';
-import { Response } from '../models/api-response.model';
-import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RequestWithUser, Role } from '~/common/utils';
-import { NotificationService } from '../notification/notification.service';
-import { TechniciansService } from '../technicians/technicians.service';
+import { JwtGuard } from '../auth/guards/jwt.guard';
+import { Response } from '../models/api-response.model';
+import { CreateOrderRequest, OrderResponse } from '../models/order.model';
+import { OrderService } from './order.service';
 
 @Controller('orders')
 export class OrderController {
-  constructor(
-    private readonly notificationService: NotificationService,
-    private readonly orderService: OrderService,
-    private readonly technicianService: TechniciansService,
-  ) {}
+  constructor(private readonly orderService: OrderService) {}
   private readonly logger: Logger = new Logger(OrderController.name);
 
   @UseGuards(JwtGuard)
@@ -42,18 +36,6 @@ export class OrderController {
       request.user.sub,
       requestBody,
     );
-
-    // // Prepare notification request
-    // const notificationRequest = {
-    //   title: 'Ada order baru',
-    //   body: `Ada order baru dari ${orderResult.customer.name}.`,
-    // };
-    // // Push notification to available technicians
-    // await this.notificationService.create(
-    //   availableTechnicianIds,
-    //   notificationRequest,
-    //   Role.Technician,
-    // );
     this.logger.log(
       `OrderController.create(${JSON.stringify(requestBody)}): success`,
     );

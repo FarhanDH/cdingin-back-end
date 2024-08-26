@@ -33,13 +33,6 @@ export class OrderService {
     private readonly technicianService: TechniciansService,
   ) {}
 
-  /**
-   * Create a new order.
-   * @param customerId The ID of the customer.
-   * @param requestBody The request body containing order details.
-   * @returns A promise that resolves to the created order.
-   * @throws HttpException if order is not found.
-   */
   async create(
     customerId: string,
     requestBody: CreateOrderRequest,
@@ -47,8 +40,8 @@ export class OrderService {
     this.logger.debug(`OrderService.create(${JSON.stringify(requestBody)})`);
     try {
       // throw exception if customer still have order that not yet completed
-      const order = await this.getOneByCustomerId(customerId);
-      if (order && order.status !== OrderStatus.COMPLETED) {
+      const existingOrder = await this.getOneByCustomerId(customerId);
+      if (existingOrder && existingOrder.status !== OrderStatus.COMPLETED) {
         this.logger.warn(`Customer still have order that not yet completed`);
         throw new HttpException(
           { errors: 'Customer still have order that not yet completed' },
