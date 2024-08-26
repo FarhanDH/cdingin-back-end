@@ -98,7 +98,7 @@ export class OrderService {
       await this.notificationService.create(
         customerId,
         notificationRequest,
-        'customer',
+        Role.Customer,
       );
 
       this.logger.log(

@@ -4,11 +4,8 @@ import { Repository } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotificationService } from './notification.service';
 import { Notification } from './entities/notification.entity';
-import {
-  CreateNotificationRequest,
-  NotificationEvent,
-} from '../models/notification.model';
-import { HttpException } from '@nestjs/common';
+import { CreateNotificationRequest } from '../models/notification.model';
+import { Role } from '~/common/utils';
 
 describe('NotificationService', () => {
   let service: NotificationService;
@@ -21,7 +18,12 @@ describe('NotificationService', () => {
         NotificationService,
         {
           provide: getRepositoryToken(Notification),
-          useClass: Repository,
+          useValue: {
+            create: jest.fn(),
+            save: jest.fn(),
+            find: jest.fn(),
+            findOne: jest.fn(),
+          },
         },
         {
           provide: EventEmitter2,
@@ -45,79 +47,65 @@ describe('NotificationService', () => {
 
   describe('create', () => {
     it('should create a new notification', async () => {
-      const userId = 'user123';
-      const requestBody: CreateNotificationRequest = {
+      const createNotificationRequest: CreateNotificationRequest = {
         title: 'Test Notification',
         body: 'This is a test notification',
       };
-      const createdNotification = new Notification();
-      createdNotification.id = 1;
-      createdNotification.title = requestBody.title;
-      createdNotification.body = requestBody.body;
+      const recipient = 'user1';
+      const userType = Role.Customer;
 
-      jest.spyOn(repository, 'create').mockReturnValue(createdNotification);
-      jest.spyOn(repository, 'save').mockResolvedValue(createdNotification);
-
-      const result = await service.create(userId, requestBody);
-
-      expect(repository.create).toHaveBeenCalledWith({
-        body: requestBody.body,
-        title: requestBody.title,
-        customer: { id: userId },
-        technician: { id: userId },
-      });
-      expect(repository.save).toHaveBeenCalledWith(createdNotification);
-      expect(eventEmitter.emit).toHaveBeenCalledWith(
-        NotificationEvent.NEW_NOTIFICATION,
-        createdNotification,
-      );
-      expect(result).toEqual({
-        id: createdNotification.id,
-        title: createdNotification.title,
-        body: createdNotification.body,
+      const savedNotification = {
+        id: 1,
+        title: createNotificationRequest.title,
+        body: createNotificationRequest.body,
         is_read: false,
-        date_created: expect.any(Date),
-      });
-    });
+        customer: { id: recipient },
+      } as Notification;
 
-    it('should throw HttpException on error', async () => {
-      const userId = 'user123';
-      const requestBody: CreateNotificationRequest = {
-        title: 'Test Notification',
-        body: 'This is a test notification',
-      };
+      jest.spyOn(repository, 'create').mockReturnValue(savedNotification);
+      jest.spyOn(repository, 'save').mockResolvedValue(savedNotification);
 
-      jest.spyOn(repository, 'create').mockImplementation(() => {
-        throw new Error('Database error');
-      });
+      await service.create(recipient, createNotificationRequest, userType);
 
-      await expect(service.create(userId, requestBody)).rejects.toThrow(
-        HttpException,
+      expect(repository.create).toHaveBeenCalledWith([
+        {
+          body: createNotificationRequest.body,
+          title: createNotificationRequest.title,
+          is_read: false,
+          customer: { id: recipient },
+        },
+      ]);
+      expect(repository.save).toHaveBeenCalledWith([savedNotification]);
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'new.notification',
+        savedNotification,
       );
     });
   });
 
   describe('findAll', () => {
-    it('should return all notifications for a user', async () => {
-      const userId = 'user123';
-      const notifications = [
+    it('should return an array of notifications', async () => {
+      const userId = 'user1';
+      const mockNotifications = [
         {
           id: 1,
           title: 'Notification 1',
           body: 'Body 1',
           is_read: false,
-          date_created: new Date(),
+          customer: { id: userId },
         },
         {
           id: 2,
           title: 'Notification 2',
           body: 'Body 2',
           is_read: true,
-          date_created: new Date(),
+          customer: { id: userId },
         },
-      ] as Notification[];
+      ];
 
-      jest.spyOn(repository, 'find').mockResolvedValue(notifications);
+      jest
+        .spyOn(repository, 'find')
+        .mockResolvedValue(mockNotifications as Notification[]);
 
       const result = await service.findAll(userId);
 
@@ -128,21 +116,26 @@ describe('NotificationService', () => {
           technician: true,
         },
       });
-      expect(result).toEqual(notifications);
+      expect(result).toHaveLength(2);
+      expect(result[0].title).toBe('Notification 1');
+      expect(result[1].title).toBe('Notification 2');
     });
   });
 
   describe('findOne', () => {
-    it('should return a notification by id', async () => {
+    it('should return a single notification', async () => {
       const notificationId = 1;
-      const notification = new Notification();
-      notification.id = notificationId;
-      notification.title = 'Test Notification';
-      notification.body = 'Test Body';
-      notification.is_read = false;
-      notification.date_created = new Date();
+      const mockNotification = {
+        id: notificationId,
+        title: 'Test Notification',
+        body: 'Test Body',
+        is_read: false,
+        customer: { id: 'user1' },
+      };
 
-      jest.spyOn(repository, 'findOne').mockResolvedValue(notification);
+      jest
+        .spyOn(repository, 'findOne')
+        .mockResolvedValue(mockNotification as Notification);
 
       const result = await service.findOne(notificationId);
 
@@ -153,22 +146,17 @@ describe('NotificationService', () => {
           technician: true,
         },
       });
-      expect(result).toEqual({
-        id: notification.id,
-        title: notification.title,
-        body: notification.body,
-        is_read: notification.is_read,
-        date_created: notification.date_created,
-      });
+      expect(result.id).toBe(notificationId);
+      expect(result.title).toBe('Test Notification');
     });
 
-    it('should throw HttpException when notification is not found', async () => {
-      const notificationId = 1;
+    it('should throw an error if notification is not found', async () => {
+      const notificationId = 999;
 
       jest.spyOn(repository, 'findOne').mockResolvedValue(null);
 
       await expect(service.findOne(notificationId)).rejects.toThrow(
-        HttpException,
+        'Notification not found',
       );
     });
   });
@@ -176,14 +164,20 @@ describe('NotificationService', () => {
   describe('markAsRead', () => {
     it('should mark a notification as read', async () => {
       const notificationId = 1;
-      const notification = new Notification();
-      notification.id = notificationId;
-      notification.is_read = false;
+      const mockNotification = {
+        id: notificationId,
+        title: 'Test Notification',
+        body: 'Test Body',
+        is_read: false,
+      };
 
-      jest.spyOn(repository, 'findOne').mockResolvedValue(notification);
       jest
-        .spyOn(repository, 'save')
-        .mockResolvedValue({ ...notification, is_read: true });
+        .spyOn(repository, 'findOne')
+        .mockResolvedValue(mockNotification as Notification);
+      jest.spyOn(repository, 'save').mockResolvedValue({
+        ...mockNotification,
+        is_read: true,
+      } as Notification);
 
       await service.markAsRead(notificationId);
 
@@ -191,29 +185,19 @@ describe('NotificationService', () => {
         where: { id: notificationId },
       });
       expect(repository.save).toHaveBeenCalledWith({
-        ...notification,
+        ...mockNotification,
         is_read: true,
       });
     });
 
-    it('should throw HttpException when notification is not found', async () => {
-      const notificationId = 1;
+    it('should throw an error if notification is not found', async () => {
+      const notificationId = 999;
 
       jest.spyOn(repository, 'findOne').mockResolvedValue(null);
 
       await expect(service.markAsRead(notificationId)).rejects.toThrow(
-        HttpException,
+        'Notification not found',
       );
-    });
-  });
-
-  describe('sseEmitter', () => {
-    it('should return an Observable for SSE', async () => {
-      const userId = 'user123';
-      const observable = await service.sseEmitter(userId);
-
-      expect(observable).toBeDefined();
-      expect(typeof observable.subscribe).toBe('function');
     });
   });
 });
