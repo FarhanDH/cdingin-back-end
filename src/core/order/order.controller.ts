@@ -14,10 +14,16 @@ import { CreateOrderRequest, OrderResponse } from '../models/order.model';
 import { Response } from '../models/api-response.model';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RequestWithUser, Role } from '~/common/utils';
+import { NotificationService } from '../notification/notification.service';
+import { TechniciansService } from '../technicians/technicians.service';
 
 @Controller('orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly notificationService: NotificationService,
+    private readonly orderService: OrderService,
+    private readonly technicianService: TechniciansService,
+  ) {}
   private readonly logger: Logger = new Logger(OrderController.name);
 
   @UseGuards(JwtGuard)
@@ -32,13 +38,28 @@ export class OrderController {
     if (request.user.role === Role.Technician) {
       throw new HttpException({ errors: 'User role invalid' }, 403);
     }
-    const order = await this.orderService.create(request.user.sub, requestBody);
+    const orderResult = await this.orderService.create(
+      request.user.sub,
+      requestBody,
+    );
+
+    // // Prepare notification request
+    // const notificationRequest = {
+    //   title: 'Ada order baru',
+    //   body: `Ada order baru dari ${orderResult.customer.name}.`,
+    // };
+    // // Push notification to available technicians
+    // await this.notificationService.create(
+    //   availableTechnicianIds,
+    //   notificationRequest,
+    //   Role.Technician,
+    // );
     this.logger.log(
       `OrderController.create(${JSON.stringify(requestBody)}): success`,
     );
     return {
       message: 'Order created successfully',
-      data: order,
+      data: orderResult,
     };
   }
 

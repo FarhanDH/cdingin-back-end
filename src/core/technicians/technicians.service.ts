@@ -75,4 +75,20 @@ export class TechniciansService {
       },
     });
   }
+
+  async getAvailableTechnicianIds(): Promise<string[]> {
+    this.logger.debug(`TechnicianService.getAvailableTechnicians()`);
+    const availableTechnicians = await this.techniciansRepository.find({
+      where: { is_available: true },
+      relations: {
+        contact: true,
+      },
+    });
+
+    const availableTechniciansIds = availableTechnicians.map(
+      (technician) => technician.id,
+    );
+    console.log('availableTechniciansIds: ', availableTechniciansIds);
+    return availableTechniciansIds;
+  }
 }

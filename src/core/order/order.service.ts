@@ -10,17 +10,13 @@ import { Not, Repository } from 'typeorm';
 import { JwtPayload } from '../models/auth.model';
 import { Role } from '~/common/utils';
 import { NotificationService } from '../notification/notification.service';
+import { TechniciansService } from '../technicians/technicians.service';
 
 /**
  * OrderService is a service class that handles order related operations.
  */
 @Injectable()
 export class OrderService {
-  /**
-   * The repository for Order entity.
-   */
-  private readonly orderRepository: Repository<Order>;
-
   /**
    * The logger for OrderService.
    */
@@ -32,11 +28,10 @@ export class OrderService {
    */
   constructor(
     @InjectRepository(Order)
-    orderRepository: Repository<Order>,
+    private readonly orderRepository: Repository<Order>,
     private readonly notificationService: NotificationService,
-  ) {
-    this.orderRepository = orderRepository;
-  }
+    private readonly technicianService: TechniciansService,
+  ) {}
 
   /**
    * Create a new order.
@@ -84,27 +79,30 @@ export class OrderService {
         date_service: requestBody.dateService,
       });
       const savedOrder: Order = await this.orderRepository.save(createdOrder);
-      const result: Order | null = await this.getOneById(savedOrder.id);
-      if (!result) {
+      const [orderResult, availableTechnicianIds] = await Promise.all([
+        this.getOneById(savedOrder.id),
+        this.technicianService.getAvailableTechnicianIds(),
+      ]);
+      if (!orderResult) {
         throw new HttpException({ errors: 'Order Not Found' }, 404);
       }
 
       // Prepare notification request
       const notificationRequest = {
-        title: 'Your order is complete',
-        body: `Your order with ID ${result.id} has been completed successfully.`,
+        title: 'Ada order baru',
+        body: `Ada order baru dari ${orderResult.customer.name}.`,
       };
-      // Push notification to customer
+      // Push notification to available technicians
       await this.notificationService.create(
-        customerId,
+        availableTechnicianIds,
         notificationRequest,
-        Role.Customer,
+        Role.Technician,
       );
 
       this.logger.log(
         `OrderService.create(${JSON.stringify(requestBody)}): success`,
       );
-      return toOrderResponse(result);
+      return toOrderResponse(orderResult);
     } catch (error) {
       this.logger.error(
         `OrderService.create(${JSON.stringify(requestBody)}): ${error.response?.errors}`,

@@ -213,7 +213,7 @@ export class NotificationService {
       ).pipe(
         filter(
           (data: Notification) =>
-            (data.customer.id || data.technician.id) === userId,
+            data.customer?.id === userId || data.technician?.id === userId,
         ), // Hanya kirim notifikasi yang relevan
         map((data: Notification) => {
           const notificationResponse = toNotificationResponse(data);
