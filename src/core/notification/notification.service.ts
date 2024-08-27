@@ -102,7 +102,9 @@ export class NotificationService {
         `NotificationService.create: success for ${recipients.length} recipients`,
       );
     } catch (error) {
-      this.logger.error(`NotificationService.create: ${error.message}`);
+      this.logger.error(
+        `NotificationService.create: ${error.response?.errors}`,
+      );
       this.logger.error(`Error details: ${JSON.stringify(error)}`);
       throw new HttpException(
         {
