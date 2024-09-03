@@ -18,11 +18,6 @@ import { Role } from '~/common/utils';
 @Injectable()
 export class NotificationService {
   /**
-   * The repository for managing notifications.
-   */
-  private readonly notificationRepository: Repository<Notification>;
-
-  /**
    * The logger instance for the NotificationService class.
    */
   private readonly logger: Logger = new Logger(NotificationService.name);
@@ -33,11 +28,9 @@ export class NotificationService {
    */
   constructor(
     @InjectRepository(Notification)
-    notificationRepository: Repository<Notification>,
+    private readonly notificationRepository: Repository<Notification>,
     private readonly eventEmitter: EventEmitter2,
-  ) {
-    this.notificationRepository = notificationRepository;
-  }
+  ) {}
 
   /**
    * Create new notifications for one or more recipients.
@@ -67,36 +60,51 @@ export class NotificationService {
       )}\n)`,
     );
     try {
-      recipients = Array.isArray(recipients) ? recipients : [recipients];
+      if (Array.isArray(recipients)) {
+        const newNotifications: Notification[] =
+          this.notificationRepository.create(
+            recipients.map((recipient) => ({
+              body: requestBody.body,
+              title: requestBody.title,
+              is_read: false,
+              [userType === Role.Customer ? 'customer' : 'technician']: {
+                id: recipient,
+              },
+            })),
+          );
 
-      const newNotifications: Notification[] =
-        this.notificationRepository.create(
-          recipients.map((recipient) => ({
-            body: requestBody.body,
-            title: requestBody.title,
-            is_read: false,
-            [userType === Role.Customer ? 'customer' : 'technician']: {
-              id: recipient,
-            },
-          })),
-        );
+        const savedNotifications: Notification[] =
+          await this.notificationRepository.save(newNotifications);
 
-      const savedNotifications =
-        await this.notificationRepository.save(newNotifications);
+        if (savedNotifications.length === 0) {
+          throw new HttpException(
+            { errors: 'Failed to create notifications' },
+            500,
+          );
+        }
 
-      if (savedNotifications.length === 0) {
-        throw new HttpException(
-          { errors: 'Failed to create notifications' },
-          500,
-        );
-      }
-
-      savedNotifications.forEach((notification) => {
+        savedNotifications.forEach((notification) => {
+          this.eventEmitter.emit(
+            NotificationEvent.NEW_NOTIFICATION,
+            notification,
+          );
+        });
+      } else {
+        const newNotification = this.notificationRepository.create({
+          body: requestBody.body,
+          title: requestBody.title,
+          is_read: false,
+          [userType === Role.Customer ? 'customer' : 'technician']: {
+            id: recipients,
+          },
+        });
+        const savedNotification =
+          await this.notificationRepository.save(newNotification);
         this.eventEmitter.emit(
           NotificationEvent.NEW_NOTIFICATION,
-          notification,
+          savedNotification,
         );
-      });
+      }
 
       this.logger.log(
         `NotificationService.create: success for ${recipients.length} recipients`,

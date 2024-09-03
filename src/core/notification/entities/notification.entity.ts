@@ -29,10 +29,10 @@ export class Notification {
   @ManyToOne(() => Customer, (customer) => customer.notifications, {
     nullable: true,
   })
-  customer: Relation<Customer>;
+  customer: Relation<Customer> | null;
 
   @ManyToOne(() => Technician, (technician) => technician.notifications, {
     nullable: true,
   })
-  technician: Relation<Technician>;
+  technician: Relation<Technician> | null;
 }
