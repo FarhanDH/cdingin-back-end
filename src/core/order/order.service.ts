@@ -1,16 +1,14 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Not, Repository } from 'typeorm';
+import { Role } from '~/common/utils';
+import { JwtPayload } from '../models/auth.model';
 import {
   CreateOrderRequest,
   OrderResponse,
   toOrderResponse,
 } from '../models/order.model';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
-import { Not, Repository } from 'typeorm';
-import { JwtPayload } from '../models/auth.model';
-import { Role } from '~/common/utils';
-import { NotificationService } from '../notification/notification.service';
-import { TechniciansService } from '../technicians/technicians.service';
 
 /**
  * OrderService is a service class that handles order related operations.
@@ -29,8 +27,6 @@ export class OrderService {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-    private readonly notificationService: NotificationService,
-    private readonly technicianService: TechniciansService,
   ) {}
 
   async create(
@@ -72,25 +68,10 @@ export class OrderService {
         date_service: requestBody.dateService,
       });
       const savedOrder: Order = await this.orderRepository.save(createdOrder);
-      const [orderResult, availableTechnicianIds] = await Promise.all([
-        this.getOneById(savedOrder.id),
-        this.technicianService.getAvailableTechnicianIds(),
-      ]);
+      const orderResult = await this.getOneById(savedOrder.id);
       if (!orderResult) {
         throw new HttpException({ errors: 'Order Not Found' }, 404);
       }
-
-      // Prepare notification request
-      const notificationRequest = {
-        title: 'Ada order baru',
-        body: `Ada order baru dari ${orderResult.customer.name}.`,
-      };
-      // Push notification to available technicians
-      await this.notificationService.create(
-        availableTechnicianIds,
-        notificationRequest,
-        Role.Technician,
-      );
 
       this.logger.log(
         `OrderService.create(${JSON.stringify(requestBody)}): success`,

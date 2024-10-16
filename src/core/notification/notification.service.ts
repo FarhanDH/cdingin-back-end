@@ -60,6 +60,7 @@ export class NotificationService {
       )}\n)`,
     );
     try {
+      // validate if recipient is more than 1 or array of string
       if (Array.isArray(recipients)) {
         const newNotifications: Notification[] =
           this.notificationRepository.create(
